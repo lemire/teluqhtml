@@ -1,27 +1,27 @@
-NF6450Laboratoire sur la structure en arbre des documents XML
-https://m2.teluq.ca/mod/page/view.php?id=130916
-laboratoire markdown
-https://m2.teluq.ca/mod/page/view.php?id=130970
-laboratoire xpath
-https://m2.teluq.ca/mod/page/view.php?id=130994
-laboratoire xslt
-https://m2.teluq.ca/mod/page/view.php?id=131060
-laboratoire css
-https://m2.teluq.ca/mod/page/view.php?id=131075
+# INF6450
+- **Laboratoire sur la structure en arbre des documents XML**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=130916)
+- **Laboratoire Markdown**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=130970)
+- **Laboratoire XPath**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=130994)
+- **Laboratoire XSLT**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=131060)
+- **Laboratoire CSS**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=131075)
 
-INF 6460 & INF 6104
-laboratoire regex
-https://m2.teluq.ca/mod/page/view.php?id=158110
+# INF6460 & INF6104
+- **Laboratoire Regex**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=158110)
 
-INF 6408 et INF 9004
-laboratoire SQL en ligne
-https://m2.teluq.ca/mod/page/view.php?id=164167
+# INF6408 & INF9004
+- **Laboratoire SQL en ligne**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=164167)
 
-INF 2020
-Laboratoire Python en ligne
-https://m2.teluq.ca/mod/page/view.php?id=164173
+# INF2020
+- **Laboratoire Python en ligne**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=164173)
 
-INF 2007
-Go en ligne
-https://m2.teluq.ca/mod/page/view.php?id=164176
-
+# INF2007
+- **Go en ligne**  
+  [Lien](https://m2.teluq.ca/mod/page/view.php?id=164176)

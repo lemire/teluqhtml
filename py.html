@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratoire Python en Ligne</title>
+</head>
+<body style="background-color: #f3f4f6; padding: 24px; font-family: Arial, sans-serif;">
+    <div style="max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1f2937;">Laboratoire Python en ligne </h1>
+        <p style="margin-bottom: 16px; color: #4b5563;">
+            Modifiez ou utilisez le code Python ci-dessous, puis cliquez sur "Exécuter" pour afficher les résultats. Exemple :
+        </p>
+            <script src="https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.js"></script>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Exemple Python :</h2>
+            <pre style="background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151;">
+etudiants = [
+    {"nom": "Laroche", "prenom": "Pierre", "statut": "inscrit"},
+    {"nom": "Aaron", "prenom": "Jean", "statut": "inscrit"},
+    {"nom": "Pouf", "prenom": "Jean", "statut": "non-inscrit"}
+]
+
+inscrits = [e for e in etudiants if e["statut"] == "inscrit"]
+inscrits_tries = sorted(inscrits, key=lambda x: x["nom"])
+
+for etudiant in inscrits_tries:
+    print(f"{etudiant['prenom']} {etudiant['nom']}")
+            </pre>
+        </div>
+
+        <div style="background-color: #f9fafb; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <p style="font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 8px;">Code Python :</p>
+            <textarea id="pythonInput" rows="15" cols="45" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 16px;">
+etudiants = [
+    {"nom": "Laroche", "prenom": "Pierre", "statut": "inscrit"},
+    {"nom": "Aaron", "prenom": "Jean", "statut": "inscrit"},
+    {"nom": "Pouf", "prenom": "Jean", "statut": "non-inscrit"}
+]
+
+inscrits = [e for e in etudiants if e["statut"] == "inscrit"]
+inscrits_tries = sorted(inscrits, key=lambda x: x["nom"])
+
+for etudiant in inscrits_tries:
+    print(f"{etudiant['prenom']} {etudiant['nom']}")
+            </textarea>
+
+            <button id="runButton" style="width: 100%; background-color: #2563eb; color: #ffffff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; margin-bottom: 16px;">
+                Exécuter
+            </button>
+
+            <div id="error" style="margin-bottom: 16px; color: #dc2626; font-size: 14px;"></div>
+            <div id="result" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 4px; min-height: 50px;"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        let pyodideInstance = null;
+
+        // Function to load Pyodide
+        async function loadPyodideOnce() {
+            if (pyodideInstance) {
+                return pyodideInstance;
+            }
+            try {
+                const pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/"
+                });
+                // Initialize sys.stdout redirection once
+                pyodide.runPython(`
+                    import sys
+                    from io import StringIO
+                    sys.stdout = StringIO()
+                    sys.stderr = StringIO()
+                `);
+                pyodideInstance = pyodide;
+                return pyodide;
+            } catch (e) {
+                document.getElementById('error').textContent = `Erreur : Impossible de charger Pyodide - ${e.message}`;
+                throw e;
+            }
+        }
+
+        // Event listener for the run button
+        document.getElementById('runButton').addEventListener('click', async function() {
+            const pythonInput = document.getElementById('pythonInput').value.trim();
+            const errorDiv = document.getElementById('error');
+            const resultDiv = document.getElementById('result');
+
+            // Clear previous results and errors
+            errorDiv.textContent = '';
+            resultDiv.innerHTML = '';
+
+            if (!pythonInput) {
+                errorDiv.textContent = 'Erreur : Veuillez entrer un code Python.';
+                return;
+            }
+
+            try {
+                const pyodide = await loadPyodideOnce();
+
+                // Clear the StringIO buffers before each run
+                pyodide.runPython('sys.stdout = StringIO()');
+                pyodide.runPython('sys.stderr = StringIO()');
+
+                // Execute the Python code
+                await pyodide.runPythonAsync(pythonInput);
+
+                // Get output from stdout
+                const output = pyodide.runPython('sys.stdout.getvalue()');
+                // Get errors from stderr
+                const errorOutput = pyodide.runPython('sys.stderr.getvalue()');
+
+                if (errorOutput) {
+                    errorDiv.textContent = `Erreur Python : ${errorOutput}`;
+                } else if (output) {
+                    const pre = document.createElement('pre');
+                    pre.textContent = output;
+                    pre.style.fontFamily = 'monospace';
+                    pre.style.fontSize = '14px';
+                    pre.style.color = '#374151';
+                    pre.style.padding = '8px';
+                    pre.style.backgroundColor = '#f9fafb';
+                    pre.style.border = '1px solid #e5e7eb';
+                    pre.style.borderRadius = '4px';
+                    pre.style.margin = '0';
+                    resultDiv.appendChild(pre);
+                } else {
+                    resultDiv.textContent = 'Le code s\'est exécuté sans erreur et n\'a produit aucune sortie.';
+                    resultDiv.style.color = '#4b5563';
+                }
+            } catch (e) {
+                errorDiv.textContent = `Erreur lors de l'exécution : ${e.message}`;
+            }
+        });
+
+        // Load Pyodide when the page loads
+        document.addEventListener('DOMContentLoaded', loadPyodideOnce);
+    </script>
+</body>
+</html>

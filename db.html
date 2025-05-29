@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratoire SQLite : Liste d'Étudiants Inscrits</title>
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.min.js"></script>
+</head>
+<body style="background-color: #f3f4f6; padding: 24px; font-family: Arial, sans-serif;">
+    <div style="max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1f2937;">Laboratoire SQLite : Liste d'Étudiants Inscrits</h1>
+        <p style="margin-bottom: 16px; color: #4b5563;">
+            Modifiez ou utilisez la requête SQL ci-dessous, puis cliquez sur "Exécuter" pour afficher les résultats. La base de données contient les tables <code style="font-family: monospace;">etudiants</code> (id, nom, prenom, statut) et <code style="font-family: monospace;">cours</code> (id, etudiant_id, sigle, note).
+        </p>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Contenu de la Base de Données :</h2>
+            <button class="show-table-button" data-table="etudiants" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px; margin-right: 10px;">Afficher "etudiants"</button>
+            <button class="show-table-button" data-table="cours" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px; margin-right: 10px;">Afficher "cours"</button>
+            <div id="tableContent" style="background-color: #e6f4ea; padding: 15px; border: 1px solid #15803d; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; font-size: 14px; color: #374151; display:none;"></div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Exemples SQL :</h2>
+            <p style="margin-bottom: 8px; color: #4b5563;">Exemple 1 : Liste des étudiants inscrits</p>
+            <pre style="background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
+SELECT prenom, nom
+FROM etudiants
+WHERE statut = 'inscrit'
+ORDER BY nom ASC;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exemple 2 : Moyenne des notes par cours</p>
+            <pre style="background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151;">
+SELECT sigle, AVG(note) AS moyenne_note
+FROM cours
+GROUP BY sigle
+ORDER BY sigle ASC;
+            </pre>
+        </div>
+
+        <div style="background-color: #f9fafb; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <p style="font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 8px;">Requête SQL :</p>
+            <textarea id="sqlInput" rows="10" cols="45" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 16px;">
+SELECT sigle, AVG(note)
+FROM cours
+GROUP BY sigle
+ORDER BY sigle ASC;
+            </textarea>
+
+            <button id="runButton" style="width: 100%; background-color: #2563eb; color: #ffffff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; margin-bottom: 16px;">
+                Exécuter
+            </button>
+
+            <div id="error" style="margin-bottom: 16px; color: #dc2626; font-size: 14px;"></div>
+            <div id="result" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 4px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+
+        // Fonction pour afficher une table donnée dans un élément HTML spécifié
+        function displayTableContent(tableName, targetElementId) {
+            const targetDiv = document.getElementById(targetElementId);
+            targetDiv.innerHTML = ''; // Clear previous content
+            targetDiv.style.display = 'block'; // Show the box
+
+            try {
+                const results = db.exec(`SELECT * FROM ${tableName}`);
+
+                if (results.length === 0 || !results[0].values || results[0].values.length === 0) {
+                    targetDiv.textContent = `La table "${tableName}" est vide ou n'existe pas.`;
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+
+                // En-tête du tableau
+                const thead = document.createElement('thead');
+                const trHead = document.createElement('tr');
+                results[0].columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col;
+                    th.style.padding = '8px';
+                    th.style.border = '1px solid #a7f3d0';
+                    th.style.textAlign = 'left';
+                    th.style.backgroundColor = '#6ee7b7';
+                    th.style.fontWeight = 'bold';
+                    trHead.appendChild(th);
+                });
+                thead.appendChild(trHead);
+                table.appendChild(thead);
+
+                // Corps du tableau
+                const tbody = document.createElement('tbody');
+                results[0].values.forEach(row => {
+                    const tr = document.createElement('tr');
+                    row.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        td.style.padding = '8px';
+                        td.style.border = '1px solid #a7f3d0';
+                        td.style.textAlign = 'left';
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+
+                targetDiv.appendChild(table);
+            } catch (e) {
+                targetDiv.textContent = `Erreur lors de l'affichage de la table "${tableName}" : ${e.message}`;
+            }
+        }
+
+        initSqlJs({ locateFile: () => 'https://cdn.jsdelivr.net/npm/sql.js@1.10.3/dist/sql-wasm.wasm' }).then(function(SQL) {
+            db = new SQL.Database();
+
+            db.run(`
+                CREATE TABLE etudiants (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nom TEXT,
+                    prenom TEXT,
+                    statut TEXT
+                );
+                CREATE TABLE cours (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    etudiant_id INTEGER,
+                    sigle TEXT,
+                    note INTEGER,
+                    FOREIGN KEY (etudiant_id) REFERENCES etudiants(id)
+                );
+                INSERT INTO etudiants (nom, prenom, statut) VALUES
+                    ('Laroche', 'Pierre', 'inscrit'),
+                    ('Aaron', 'Jean', 'inscrit'),
+                    ('Dubois', 'Sophie', 'inscrit'),
+                    ('Martin', 'Luc', 'inscrit'),
+                    ('Gagnon', 'Anne', 'inscrit'),
+                    ('Tremblay', 'Marc', 'non-inscrit'),
+                    ('Lavoie', 'Catherine', 'inscrit'),
+                    ('Bergeron', 'David', 'inscrit'),
+                    ('Roy', 'Nathalie', 'inscrit'),
+                    ('Côté', 'Philippe', 'inscrit');
+
+                INSERT INTO cours (etudiant_id, sigle, note) VALUES
+                    (1, 'INF 6460', 54),
+                    (1, 'INF 6450', 44),
+                    (2, 'INF 6460', 56),
+                    (2, 'INF 6450', 46),
+                    (3, 'INF 6460', 70),
+                    (3, 'INF 6450', 65),
+                    (4, 'INF 6460', 80),
+                    (4, 'INF 6450', 75),
+                    (5, 'INF 6460', 90),
+                    (5, 'INF 6450', 88),
+                    (6, 'INF 6460', 30),
+                    (6, 'INF 6450', 25),
+                    (7, 'INF 6460', 78),
+                    (7, 'INF 6450', 72),
+                    (8, 'INF 6460', 85),
+                    (8, 'INF 6450', 81),
+                    (9, 'INF 6460', 62),
+                    (9, 'INF 6450', 59),
+                    (10, 'INF 6460', 95),
+                    (10, 'INF 6450', 92),
+                    (1, 'MTH 1010', 60),
+                    (2, 'MTH 1010', 70),
+                    (3, 'MTH 1010', 85),
+                    (4, 'PHY 2020', 70),
+                    (5, 'PHY 2020', 80);
+            `);
+
+            // Ajouter les écouteurs d'événements pour les boutons d'affichage de table
+            document.querySelectorAll('.show-table-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tableName = this.dataset.table;
+                    displayTableContent(tableName, 'tableContent');
+                });
+            });
+
+
+            document.getElementById('runButton').addEventListener('click', function() {
+                const sqlInput = document.getElementById('sqlInput').value.trim();
+                const errorDiv = document.getElementById('error');
+                const resultDiv = document.getElementById('result');
+
+                errorDiv.textContent = '';
+                resultDiv.innerHTML = '';
+
+                if (!sqlInput) {
+                    errorDiv.textContent = 'Erreur : Veuillez entrer une requête SQL.';
+                    return;
+                }
+
+                try {
+                    const results = db.exec(sqlInput);
+
+                    if (results.length === 0 || !results[0].values || results[0].values.length === 0) {
+                        if (sqlInput.toUpperCase().startsWith('SELECT')) {
+                            resultDiv.textContent = 'Aucun résultat retourné par la requête SELECT.';
+                        } else {
+                            resultDiv.textContent = 'Requête exécutée avec succès (aucune donnée à afficher).';
+                        }
+                        return;
+                    }
+
+                    const table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.fontSize = '14px';
+                    table.style.color = '#374151';
+
+                    const thead = document.createElement('thead');
+                    const trHead = document.createElement('tr');
+                    results[0].columns.forEach(col => {
+                        const th = document.createElement('th');
+                        th.textContent = col;
+                        th.style.padding = '8px';
+                        th.style.border = '1px solid #e5e7eb';
+                        th.style.backgroundColor = '#e6f4ea';
+                        th.style.fontWeight = 'bold';
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    results[0].values.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            td.style.padding = '8px';
+                            td.style.border = '1px solid #e5e7eb';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+
+                    resultDiv.appendChild(table);
+                } catch (e) {
+                    errorDiv.textContent = `Erreur : Requête SQL invalide - ${e.message}`;
+                }
+            });
+        }).catch(e => {
+            document.getElementById('error').textContent = `Erreur : Impossible de charger SQL.js - ${e.message}`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Réseau de Neurones Interactif</title>
+    <script src="https://cdn.jsdelivr.net/npm/convnetjs@0.3.0/build/convnet-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0;">
+    <h1 style="text-align: center; color: #333;">Réseau de neurones en ligne</h1>
+    
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Saisie des paires (x, y)</h2>
+        <p style="font-size: 14px; color: #555; margin-bottom: 10px;">Entrez des valeurs numériques pour x et y.</p>
+        <div id="inputs" style="margin-bottom: 20px;">
+            <!-- Les champs seront ajoutés dynamiquement -->
+        </div>
+        <button onclick="addInput()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Ajouter une paire</button>
+        <button onclick="trainModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Entraîner le modèle</button>
+    </div>
+
+    <div id="results" style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none;">
+        <h2 style="color: #444;">Résultats du modèle</h2>
+        <p id="parameters" style="font-size: 16px; color: #333;">Modèle entraîné. Prêt pour les prédictions.</p>
+        <h3 style="color: #444;">Entraînement (Perte)</h3>
+        <canvas id="lossChart" style="max-width: 100%; margin-bottom: 20px;"></canvas>
+        <h3 style="color: #444;">Prédictions</h3>
+        <canvas id="chart" style="max-width: 100%;"></canvas>
+    </div>
+
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Prédiction</h2>
+        <input id="xPredict" type="number" step="any" placeholder="Entrez une valeur x" style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+        <button onclick="predictY()" style="padding: 8px 20px; background-color: #ffc107; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire y</button>
+        <p id="prediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+    </div>
+
+    <script>
+        let inputCount = 0;
+        let net = null;
+        let chart = null;
+        let lossChart = null;
+        let xMin, xMax, yMin, yMax;
+
+        function addInput() {
+            if (inputCount >= 10) {
+                alert("Maximum 10 paires atteintes !");
+                return;
+            }
+            const inputsDiv = document.getElementById('inputs');
+            const div = document.createElement('div');
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <input type="number" step="any" placeholder="x${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+                <input type="number" step="any" placeholder="y${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px;">
+            `;
+            inputsDiv.appendChild(div);
+            inputCount++;
+        }
+
+        function getData() {
+            const inputs = document.querySelectorAll('#inputs input');
+            const data = [];
+            for (let i = 0; i < inputs.length; i += 2) {
+                const x = parseFloat(inputs[i].value);
+                const y = parseFloat(inputs[i + 1].value);
+                if (!isNaN(x) && !isNaN(y)) {
+                    data.push({ x, y });
+                }
+            }
+            return data;
+        }
+
+        function trainModel() {
+            const data = getData();
+            if (data.length < 2) {
+                alert("Veuillez entrer au moins 2 paires valides !");
+                return;
+            }
+
+            // Normalisation des données
+            const inputXValues = data.map(d => d.x);
+            const inputYValues = data.map(d => d.y);
+            xMin = Math.min(...inputXValues);
+            xMax = Math.max(...inputXValues);
+            yMin = Math.min(...inputYValues);
+            yMax = Math.max(...inputYValues);
+
+            const normalizedData = data.map(d => ({
+                x: (d.x - xMin) / (xMax - xMin) || 0, // Éviter division par 0
+                y: (d.y - yMin) / (yMax - yMin) || 0
+            }));
+
+            // Création du réseau de neurones
+            const layer_defs = [];
+            layer_defs.push({ type: 'input', out_sx: 1, out_sy: 1, out_depth: 1 });
+            layer_defs.push({ type: 'fc', num_neurons: 10, activation: 'relu' });
+            layer_defs.push({ type: 'regression', num_neurons: 1 });
+
+            net = new convnetjs.Net();
+            net.makeLayers(layer_defs);
+
+            const trainer = new convnetjs.Trainer(net, {
+                method: 'adadelta',
+                learning_rate: 0.01,
+                batch_size: 1
+            });
+
+            // Initialisation du graphique de la perte
+            const lossCtx = document.getElementById('lossChart').getContext('2d');
+            if (lossChart) lossChart.destroy();
+            const lossData = [];
+            lossChart = new Chart(lossCtx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Perte',
+                        data: lossData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Itération' } },
+                        y: { title: { display: true, text: 'Perte' }, beginAtZero: true }
+                    },
+                    plugins: {
+                        title: { display: true, text: 'Perte pendant l\'entraînement' }
+                    }
+                }
+            });
+
+            // Entraînement avec mise à jour de la perte
+            const iterations = 1000;
+            for (let i = 0; i < iterations; i++) {
+                let totalLoss = 0;
+                normalizedData.forEach(d => {
+                    const x = new convnetjs.Vol([d.x]);
+                    const stats = trainer.train(x, [d.y]);
+                    totalLoss += stats.loss;
+                });
+                const avgLoss = totalLoss / normalizedData.length;
+                lossData.push({ x: i + 1, y: avgLoss });
+                if (i % 10 === 0 || i === iterations - 1) {
+                    lossChart.data.datasets[0].data = lossData;
+                    lossChart.update();
+                }
+            }
+
+            // Affichage des résultats
+            document.getElementById('results').style.display = 'block';
+
+            // Graphique des prédictions
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (chart) chart.destroy();
+            const xRange = xMax - xMin;
+            const predictedXValues = Array.from({ length: 100 }, (_, i) => xMin + (i / 99) * xRange);
+            const normalizedPredictedX = predictedXValues.map(x => (x - xMin) / (xMax - xMin) || 0);
+            const predictedYValues = normalizedPredictedX.map(x => {
+                const vol = new convnetjs.Vol([x]);
+                const output = net.forward(vol);
+                return output.w[0] * (yMax - yMin) + yMin;
+            });
+
+            const regressionData = predictedXValues.map((x, i) => ({
+                x,
+                y: predictedYValues[i]
+            }));
+
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Données',
+                        data: data,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        pointRadius: 5
+                    }, {
+                        label: 'Prédiction réseau de neurones',
+                        data: regressionData,
+                        type: 'line',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'X' } },
+                        y: { title: { display: true, text: 'Y' } }
+                    }
+                }
+            });
+        }
+
+        function predictY() {
+            const x = parseFloat(document.getElementById('xPredict').value);
+            if (isNaN(x)) {
+                alert("Veuillez entrer une valeur x valide !");
+                return;
+            }
+            if (!net) {
+                alert("Veuillez d'abord entraîner le modèle !");
+                return;
+            }
+
+            const normalizedX = (x - xMin) / (xMax - xMin) || 0;
+            const vol = new convnetjs.Vol([normalizedX]);
+            const output = net.forward(vol);
+            const y = output.w[0] * (yMax - yMin) + yMin;
+
+            document.getElementById('prediction').innerText = `Pour x = ${x}, y = ${y.toFixed(2)}`;
+        }
+
+        // Ajouter une première paire par défaut
+        addInput();
+    </script>
+</body>
+</html>

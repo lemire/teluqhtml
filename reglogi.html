@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Régression Linéaire ou Logistique</title>
+    <title>Régression Linéaire ou Logistique avec Exercices</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0;">
-    <h1 style="text-align: center; color: #333;">Régression Interactive</h1>
+    <h1 style="text-align: center; color: #333;">Régression Interactive avec Exercices</h1>
     
     <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
         <h2 style="color: #444;">Saisie des paires (x, y)</h2>
@@ -35,6 +35,71 @@
         <p id="prediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
     </div>
 
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Exercices pour les étudiants</h2>
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Utilisez l'outil ci-dessus pour résoudre les exercices suivants, basés sur des scénarios d'entreprise réalistes. Chaque exercice propose un ensemble de données et des questions pour appliquer la régression linéaire ou logistique.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 1 : Prédiction des ventes mensuelles (Régression Linéaire)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise analyse l'impact de son budget publicitaire (en milliers d'euros) sur les ventes mensuelles (en milliers d'euros). Voici les données collectées :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(2, 10), (3, 12), (5, 15), (7, 18), (8, 20), (10, 22)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Linéaire" et entrez les paires (budget, ventes).</li>
+                <li>Apprenez le modèle et notez l'équation de la régression.</li>
+                <li>Prédisez les ventes pour un budget de 6 milliers d'euros.</li>
+                <li>Interprétez : Si le budget augmente de 1 millier d'euros, de combien augmentent les ventes en moyenne ?</li>
+            </ol>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 2 : Satisfaction client (Régression Logistique)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise étudie si le temps de réponse du service client (en heures) influence la satisfaction (1 = satisfait, 0 = non satisfait). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(1, 1), (2, 1), (3, 1), (4, 0), (5, 0), (6, 0)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Logistique" et entrez les paires (temps, satisfaction).</li>
+                <li>Apprenez le modèle et notez la fonction logistique.</li>
+                <li>Prédisez la probabilité de satisfaction pour un temps de réponse de 3.5 heures.</li>
+                <li>Interprétez : Que suggère le modèle sur l'impact du temps de réponse ?</li>
+            </ol>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 3 : Risque de défaut de paiement (Régression Logistique)</h3>
+            <p style="font-size: 14px; color: #333;">Une banque évalue si le ratio d'endettement (dette/revenu, en %) prédit le défaut de paiement (1 = défaut, 0 = pas de défaut). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(20, 0), (30, 0), (40, 0), (50, 1), (60, 1), (70, 1)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Logistique" et entrez les paires (ratio, défaut).</li>
+                <li>Apprenez le modèle et notez la fonction logistique.</li>
+                <li>Prédisez la probabilité de défaut pour un ratio de 45%.</li>
+                <li>Interprétez : À quel niveau de ratio le risque de défaut devient-il significatif (par exemple, P > 0.5) ?</li>
+            </ol>
+        </div>
+
+        <div>
+            <h3 style="color: #555;">Exercice 4 : Productivité des employés (Régression Linéaire)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise mesure l'effet du nombre d'heures de formation sur la productivité des employés (unités produites par jour). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(0, 50), (2, 55), (4, 62), (6, 68), (8, 75), (10, 80)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Linéaire" et entrez les paires (heures, productivité).</li>
+                <li>Apprenez le modèle et notez l'équation de la régression.</li>
+                <li>Prédisez la productivité pour 5 heures de formation.</li>
+                <li>Interprétez : Est-il rentable d'investir dans plus de formation ? Pourquoi ?</li>
+            </ol>
+        </div>
+    </div>
+
     <script>
         let inputCount = 0;
         let slope = 0;
@@ -42,10 +107,6 @@
         let chart = null;
 
         function addInput() {
-            if (inputCount >= 10) {
-                alert("Maximum 10 paires atteintes !");
-                return;
-            }
             const inputsDiv = document.getElementById('inputs');
             const div = document.createElement('div');
             div.style.marginBottom = '10px';

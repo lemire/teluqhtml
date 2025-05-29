@@ -2,141 +2,264 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laboratoire Python en Ligne</title>
+    <title>Régression Linéaire ou Logistique avec Exercices</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body style="background-color: #f3f4f6; padding: 24px; font-family: Arial, sans-serif;">
-    <div style="max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1f2937;">Laboratoire Python en ligne </h1>
-        <p style="margin-bottom: 16px; color: #4b5563;">
-            Modifiez ou utilisez le code Python ci-dessous, puis cliquez sur "Exécuter" pour afficher les résultats. Exemple :
-        </p>
-            <script src="https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.js"></script>
+<body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0;">
+    <h1 style="text-align: center; color: #333;">Régression Interactive avec Exercices</h1>
+    
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Saisie des paires (x, y)</h2>
+        <select id="modelType" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; margin-bottom: 10px;">
+            <option value="linear">Régression Linéaire</option>
+            <option value="logistic">Régression Logistique</option>
+        </select>
+        <p id="yInstruction" style="font-size: 14px; color: #555; margin-bottom: 10px;">Pour la régression linéaire, entrez des valeurs y numériques. Pour la régression logistique, entrez 0 ou 1.</p>
+        <div id="inputs" style="margin-bottom: 20px;">
+            <!-- Les champs seront ajoutés dynamiquement -->
+        </div>
+        <button onclick="addInput()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Ajouter une paire</button>
+        <button onclick="learnModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Apprendre le modèle</button>
+    </div>
 
-        <div style="margin-bottom: 24px;">
-            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Exemple Python :</h2>
-            <pre style="background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151;">
-etudiants = [
-    {"nom": "Laroche", "prenom": "Pierre", "statut": "inscrit"},
-    {"nom": "Aaron", "prenom": "Jean", "statut": "inscrit"},
-    {"nom": "Pouf", "prenom": "Jean", "statut": "non-inscrit"}
-]
+    <div id="results" style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none;">
+        <h2 style="color: #444;">Résultats de la régression</h2>
+        <p id="parameters" style="font-size: 16px; color: #333;"></p>
+        <canvas id="chart" style="max-width: 100%;"></canvas>
+    </div>
 
-inscrits = [e for e in etudiants if e["statut"] == "inscrit"]
-inscrits_tries = sorted(inscrits, key=lambda x: x["nom"])
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Prédiction</h2>
+        <input id="xPredict" type="number" step="any" placeholder="Entrez une valeur x" style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+        <button onclick="predictY()" style="padding: 8px 20px; background-color: #ffc107; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire y</button>
+        <p id="prediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+    </div>
 
-for etudiant in inscrits_tries:
-    print(f"{etudiant['prenom']} {etudiant['nom']}")
-            </pre>
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Exercices pour les étudiants</h2>
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Utilisez l'outil ci-dessus pour résoudre les exercices suivants, basés sur des scénarios d'entreprise réalistes. Chaque exercice propose un ensemble de données et des questions pour appliquer la régression linéaire ou logistique.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 1 : Prédiction des ventes mensuelles (Régression Linéaire)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise analyse l'impact de son budget publicitaire (en milliers d'euros) sur les ventes mensuelles (en milliers d'euros). Voici les données collectées :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(2, 10), (3, 12), (5, 15), (7, 18), (8, 20), (10, 22)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Linéaire" et entrez les paires (budget, ventes).</li>
+                <li>Apprenez le modèle et notez l'équation de la régression.</li>
+                <li>Prédisez les ventes pour un budget de 6 milliers d'euros.</li>
+                <li>Interprétez : Si le budget augmente de 1 millier d'euros, de combien augmentent les ventes en moyenne ?</li>
+            </ol>
         </div>
 
-        <div style="background-color: #f9fafb; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px;">
-            <p style="font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 8px;">Code Python :</p>
-            <textarea id="pythonInput" rows="15" cols="45" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 16px;">
-etudiants = [
-    {"nom": "Laroche", "prenom": "Pierre", "statut": "inscrit"},
-    {"nom": "Aaron", "prenom": "Jean", "statut": "inscrit"},
-    {"nom": "Pouf", "prenom": "Jean", "statut": "non-inscrit"}
-]
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 2 : Satisfaction client (Régression Logistique)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise étudie si le temps de réponse du service client (en heures) influence la satisfaction (1 = satisfait, 0 = non satisfait). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(1, 1), (2, 1), (3, 1), (4, 0), (5, 0), (6, 0)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Logistique" et entrez les paires (temps, satisfaction).</li>
+                <li>Apprenez le modèle et notez la fonction logistique.</li>
+                <li>Prédisez la probabilité de satisfaction pour un temps de réponse de 3.5 heures.</li>
+                <li>Interprétez : Que suggère le modèle sur l'impact du temps de réponse ?</li>
+            </ol>
+        </div>
 
-inscrits = [e for e in etudiants if e["statut"] == "inscrit"]
-inscrits_tries = sorted(inscrits, key=lambda x: x["nom"])
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 3 : Risque de défaut de paiement (Régression Logistique)</h3>
+            <p style="font-size: 14px; color: #333;">Une banque évalue si le ratio d'endettement (dette/revenu, en %) prédit le défaut de paiement (1 = défaut, 0 = pas de défaut). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(20, 0), (30, 0), (40, 0), (50, 1), (60, 1), (70, 1)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Logistique" et entrez les paires (ratio, défaut).</li>
+                <li>Apprenez le modèle et notez la fonction logistique.</li>
+                <li>Prédisez la probabilité de défaut pour un ratio de 45%.</li>
+                <li>Interprétez : À quel niveau de ratio le risque de défaut devient-il significatif (par exemple, P > 0.5) ?</li>
+            </ol>
+        </div>
 
-for etudiant in inscrits_tries:
-    print(f"{etudiant['prenom']} {etudiant['nom']}")
-            </textarea>
-
-            <button id="runButton" style="width: 100%; background-color: #2563eb; color: #ffffff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; margin-bottom: 16px;">
-                Exécuter
-            </button>
-
-            <div id="error" style="margin-bottom: 16px; color: #dc2626; font-size: 14px;"></div>
-            <div id="result" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 4px; min-height: 50px;"></div>
+        <div>
+            <h3 style="color: #555;">Exercice 4 : Productivité des employés (Régression Linéaire)</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise mesure l'effet du nombre d'heures de formation sur la productivité des employés (unités produites par jour). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(0, 50), (2, 55), (4, 62), (6, 68), (8, 75), (10, 80)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Sélectionnez "Régression Linéaire" et entrez les paires (heures, productivité).</li>
+                <li>Apprenez le modèle et notez l'équation de la régression.</li>
+                <li>Prédisez la productivité pour 5 heures de formation.</li>
+                <li>Interprétez : Est-il rentable d'investir dans plus de formation ? Pourquoi ?</li>
+            </ol>
         </div>
     </div>
 
-    <script type="text/javascript">
-        let pyodideInstance = null;
+    <script>
+        let inputCount = 0;
+        let slope = 0;
+        let intercept = 0;
+        let chart = null;
 
-        // Function to load Pyodide
-        async function loadPyodideOnce() {
-            if (pyodideInstance) {
-                return pyodideInstance;
+        function addInput() {
+            if (inputCount >= 10) {
+                alert("Maximum 10 paires atteintes !");
+                return;
             }
-            try {
-                const pyodide = await loadPyodide({
-                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/"
-                });
-                // Initialize sys.stdout redirection once
-                pyodide.runPython(`
-                    import sys
-                    from io import StringIO
-                    sys.stdout = StringIO()
-                    sys.stderr = StringIO()
-                `);
-                pyodideInstance = pyodide;
-                return pyodide;
-            } catch (e) {
-                document.getElementById('error').textContent = `Erreur : Impossible de charger Pyodide - ${e.message}`;
-                throw e;
-            }
+            const inputsDiv = document.getElementById('inputs');
+            const div = document.createElement('div');
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <input type="number" step="any" placeholder="x${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+                <input type="number" step="any" placeholder="y${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px;">
+            `;
+            inputsDiv.appendChild(div);
+            inputCount++;
         }
 
-        // Event listener for the run button
-        document.getElementById('runButton').addEventListener('click', async function() {
-            const pythonInput = document.getElementById('pythonInput').value.trim();
-            const errorDiv = document.getElementById('error');
-            const resultDiv = document.getElementById('result');
+        function getData() {
+            const modelType = document.getElementById('modelType').value;
+            const inputs = document.querySelectorAll('#inputs input');
+            const data = [];
+            for (let i = 0; i < inputs.length; i += 2) {
+                const x = parseFloat(inputs[i].value);
+                let y = parseFloat(inputs[i + 1].value);
+                if (!isNaN(x) && !isNaN(y)) {
+                    if (modelType === 'logistic' && y !== 0 && y !== 1) {
+                        continue; // Ignorer les y non-binaires pour la régression logistique
+                    }
+                    data.push({ x, y });
+                }
+            }
+            return data;
+        }
 
-            // Clear previous results and errors
-            errorDiv.textContent = '';
-            resultDiv.innerHTML = '';
+        function logisticFunction(x) {
+            return 1 / (1 + Math.exp(-(slope * x + intercept)));
+        }
 
-            if (!pythonInput) {
-                errorDiv.textContent = 'Erreur : Veuillez entrer un code Python.';
+        function learnModel() {
+            const modelType = document.getElementById('modelType').value;
+            const data = getData();
+            if (data.length < 2) {
+                alert("Veuillez entrer au moins 2 paires valides !");
                 return;
             }
 
-            try {
-                const pyodide = await loadPyodideOnce();
+            if (modelType === 'linear') {
+                // Régression linéaire
+                const n = data.length;
+                let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+                data.forEach(d => {
+                    sumX += d.x;
+                    sumY += d.y;
+                    sumXY += d.x * d.y;
+                    sumXX += d.x * d.x;
+                });
 
-                // Clear the StringIO buffers before each run
-                pyodide.runPython('sys.stdout = StringIO()');
-                pyodide.runPython('sys.stderr = StringIO()');
+                slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+                intercept = (sumY - slope * sumX) / n;
 
-                // Execute the Python code
-                await pyodide.runPythonAsync(pythonInput);
+                document.getElementById('parameters').innerText = `Équation : y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
+            } else {
+                // Régression logistique (Gradient Descent simplifié)
+                slope = 0;
+                intercept = 0;
+                const learningRate = 0.01;
+                const iterations = 1000;
 
-                // Get output from stdout
-                const output = pyodide.runPython('sys.stdout.getvalue()');
-                // Get errors from stderr
-                const errorOutput = pyodide.runPython('sys.stderr.getvalue()');
-
-                if (errorOutput) {
-                    errorDiv.textContent = `Erreur Python : ${errorOutput}`;
-                } else if (output) {
-                    const pre = document.createElement('pre');
-                    pre.textContent = output;
-                    pre.style.fontFamily = 'monospace';
-                    pre.style.fontSize = '14px';
-                    pre.style.color = '#374151';
-                    pre.style.padding = '8px';
-                    pre.style.backgroundColor = '#f9fafb';
-                    pre.style.border = '1px solid #e5e7eb';
-                    pre.style.borderRadius = '4px';
-                    pre.style.margin = '0';
-                    resultDiv.appendChild(pre);
-                } else {
-                    resultDiv.textContent = 'Le code s\'est exécuté sans erreur et n\'a produit aucune sortie.';
-                    resultDiv.style.color = '#4b5563';
+                for (let i = 0; i < iterations; i++) {
+                    let gradientSlope = 0;
+                    let gradientIntercept = 0;
+                    data.forEach(d => {
+                        const prediction = logisticFunction(d.x);
+                        const error = prediction - d.y;
+                        gradientSlope += error * prediction * (1 - prediction) * d.x;
+                        gradientIntercept += error * prediction * (1 - prediction);
+                    });
+                    slope -= (learningRate * gradientSlope) / data.length;
+                    intercept -= (learningRate * gradientIntercept) / data.length;
                 }
-            } catch (e) {
-                errorDiv.textContent = `Erreur lors de l'exécution : ${e.message}`;
-            }
-        });
 
-        // Load Pyodide when the page loads
-        document.addEventListener('DOMContentLoaded', loadPyodideOnce);
+                document.getElementById('parameters').innerText = `Modèle logistique : P(y=1) = 1 / (1 + e^(-(${slope.toFixed(2)}x + ${intercept.toFixed(2)})))`;
+            }
+
+            // Affichage des résultats
+            document.getElementById('results').style.display = 'block';
+
+            // Création du graphique
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (chart) chart.destroy();
+            const xMin = Math.min(...data.map(d => d.x));
+            const xMax = Math.max(...data.map(d => d.x));
+            const xRange = xMax - xMin;
+            const xValues = Array.from({ length: 100 }, (_, i) => xMin + (i / 99) * xRange);
+
+            let regressionData;
+            if (modelType === 'linear') {
+                regressionData = xValues.map(x => ({ x, y: slope * x + intercept }));
+            } else {
+                regressionData = xValues.map(x => ({ x, y: logisticFunction(x) }));
+            }
+
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Données',
+                        data: data,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        pointRadius: 5
+                    }, {
+                        label: modelType === 'linear' ? 'Régression linéaire' : 'Régression logistique',
+                        data: regressionData,
+                        type: 'line',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'X' } },
+                        y: { 
+                            title: { display: true, text: modelType === 'linear' ? 'Y' : 'P(y=1)' },
+                            min: modelType === 'logistic' ? 0 : undefined,
+                            max: modelType === 'logistic' ? 1 : undefined
+                        }
+                    }
+                }
+            });
+        }
+
+        function predictY() {
+            const modelType = document.getElementById('modelType').value;
+            const x = parseFloat(document.getElementById('xPredict').value);
+            if (isNaN(x)) {
+                alert("Veuillez entrer une valeur x valide !");
+                return;
+            }
+            if (slope === 0 && intercept === 0) {
+                alert("Veuillez d'abord apprendre le modèle !");
+                return;
+            }
+            let y;
+            if (modelType === 'linear') {
+                y = slope * x + intercept;
+                document.getElementById('prediction').innerText = `Pour x = ${x}, y = ${y.toFixed(2)}`;
+            } else {
+                y = logisticFunction(x);
+                document.getElementById('prediction').innerText = `Pour x = ${x}, P(y=1) = ${y.toFixed(2)}`;
+            }
+        }
+
+        // Ajouter une première paire par défaut
+        addInput();
     </script>
 </body>
 </html>

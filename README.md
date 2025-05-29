@@ -5,7 +5,9 @@
 - [db.html](https://lemire.github.io/teluqhtml/db.html)
 - [go.html](https://lemire.github.io/teluqhtml/go.html)
 - [py.html](https://lemire.github.io/teluqhtml/py.html)  
-
+- [py.html](https://lemire.github.io/teluqhtml/py.html)  
+- [regression.html](https://lemire.github.io/teluqhtml/regression.html)  
+- [reglogi.html](https://lemire.github.io/teluqhtml/reglogi.html)  
 
 - **Laboratoire sur la structure en arbre des documents XML**  
   [Lien](https://m2.teluq.ca/mod/page/view.php?id=130916)

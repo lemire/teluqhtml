@@ -1,4 +1,12 @@
 # INF6450
+
+
+- [css.html](https://lemire.github.io/teluqhtml/css.html)
+- [db.html](https://lemire.github.io/teluqhtml/db.html)
+- [go.html](https://lemire.github.io/teluqhtml/go.html)
+- [py.html](https://lemire.github.io/teluqhtml/py.html)  
+
+
 - **Laboratoire sur la structure en arbre des documents XML**  
   [Lien](https://m2.teluq.ca/mod/page/view.php?id=130916)
 - **Laboratoire Markdown**  

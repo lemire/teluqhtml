@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Régression Linéaire</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f0f0f0;">
+    <h1 style="text-align: center; color: #333;">Régression Linéaire Interactive</h1>
+    
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Saisie des paires (x, y)</h2>
+        <div id="inputs" style="margin-bottom: 20px;">
+            <!-- Les champs seront ajoutés dynamiquement -->
+        </div>
+        <button onclick="addInput()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Ajouter une paire</button>
+        <button onclick="learnModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Apprendre le modèle</button>
+    </div>
+
+    <div id="results" style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: none;">
+        <h2 style="color: #444;">Résultats de la régression</h2>
+        <p id="parameters" style="font-size: 16px; color: #333;"></p>
+        <canvas id="chart" style="max-width: 100%;"></canvas>
+    </div>
+
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Prédiction</h2>
+        <input id="xPredict" type="number" step="any" placeholder="Entrez une valeur x" style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+        <button onclick="predictY()" style="padding: 8px 20px; background-color: #ffc107; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire y</button>
+        <p id="prediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+    </div>
+
+    <script>
+        let inputCount = 0;
+        let slope = 0;
+        let intercept = 0;
+        let chart = null;
+
+        function addInput() {
+            if (inputCount >= 10) {
+                alert("Maximum 10 paires atteintes !");
+                return;
+            }
+            const inputsDiv = document.getElementById('inputs');
+            const div = document.createElement('div');
+            div.style.marginBottom = '10px';
+            div.innerHTML = `
+                <input type="number" step="any" placeholder="x${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
+                <input type="number" step="any" placeholder="y${inputCount + 1}" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px;">
+            `;
+            inputsDiv.appendChild(div);
+            inputCount++;
+        }
+
+        function getData() {
+            const inputs = document.querySelectorAll('#inputs input');
+            const data = [];
+            for (let i = 0; i < inputs.length; i += 2) {
+                const x = parseFloat(inputs[i].value);
+                const y = parseFloat(inputs[i + 1].value);
+                if (!isNaN(x) && !isNaN(y)) {
+                    data.push({ x, y });
+                }
+            }
+            return data;
+        }
+
+        function learnModel() {
+            const data = getData();
+            if (data.length < 2) {
+                alert("Veuillez entrer au moins 2 paires valides !");
+                return;
+            }
+
+            // Calcul de la régression linéaire
+            const n = data.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            data.forEach(d => {
+                sumX += d.x;
+                sumY += d.y;
+                sumXY += d.x * d.y;
+                sumXX += d.x * d.x;
+            });
+
+            slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            intercept = (sumY - slope * sumX) / n;
+
+            // Affichage des paramètres
+            document.getElementById('parameters').innerText = `Équation : y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`;
+            document.getElementById('results').style.display = 'block';
+
+            // Création du graphique
+            const ctx = document.getElementById('chart').getContext('2d');
+            if (chart) chart.destroy();
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Données',
+                        data: data,
+                        backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                        pointRadius: 5
+                    }, {
+                        label: 'Régression linéaire',
+                        data: [
+                            { x: Math.min(...data.map(d => d.x)), y: slope * Math.min(...data.map(d => d.x)) + intercept },
+                            { x: Math.max(...data.map(d => d.x)), y: slope * Math.max(...data.map(d => d.x)) + intercept }
+                        ],
+                        type: 'line',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'X' } },
+                        y: { title: { display: true, text: 'Y' } }
+                    }
+                }
+            });
+        }
+
+        function predictY() {
+            const x = parseFloat(document.getElementById('xPredict').value);
+            if (isNaN(x)) {
+                alert("Veuillez entrer une valeur x valide !");
+                return;
+            }
+            if (slope === 0 && intercept === 0) {
+                alert("Veuillez d'abord apprendre le modèle !");
+                return;
+            }
+            const y = slope * x + intercept;
+            document.getElementById('prediction').innerText = `Pour x = ${x}, y = ${y.toFixed(2)}`;
+        }
+
+        // Ajouter une première paire par défaut
+        addInput();
+    </script>
+</body>
+</html>

@@ -15,6 +15,8 @@
         <div id="inputs" style="margin-bottom: 20px;">
             <!-- Les champs seront ajoutés dynamiquement -->
         </div>
+        <label for="iterationsInput" style="font-size: 14px; color: #555; margin-right: 10px;">Nombre d'itérations :</label>
+        <input id="iterationsInput" type="number" min="1" value="100" style="padding: 8px; width: 100px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
         <button onclick="addInput()" style="padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 10px;">Ajouter une paire</button>
         <button onclick="trainModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Entraîner le modèle</button>
     </div>
@@ -33,6 +35,41 @@
         <input id="xPredict" type="number" step="any" placeholder="Entrez une valeur x" style="padding: 8px; width: 200px; border: 1px solid #ccc; border-radius: 5px; margin-right: 10px;">
         <button onclick="predictY()" style="padding: 8px 20px; background-color: #ffc107; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire y</button>
         <p id="prediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+    </div>
+
+    <div style="margin: 20px auto; width: 600px; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <h2 style="color: #444;">Exercices pour les étudiants</h2>
+        <p style="font-size: 16px; color: #333; margin-bottom: 20px;">Utilisez l'outil ci-dessus pour résoudre les exercices suivants, basés sur des scénarios d'entreprise. Chaque exercice propose un ensemble de données et des questions pour appliquer le réseau de neurones à la régression. Analysez la courbe de perte pour évaluer l'entraînement.</p>
+        
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 1 : Prédiction des ventes mensuelles</h3>
+            <p style="font-size: 14px; color: #333;">Une entreprise analyse l'impact de son budget publicitaire (en milliers d'euros) sur les ventes mensuelles (en milliers d'euros). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(2, 10), (3, 12), (5, 15), (7, 18), (8, 20)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Entrez les paires (budget, ventes).</li>
+                <li>Entraînez le modèle et observez la courbe de perte et le graphique des prédictions.</li>
+                <li>Prédisez les ventes pour un budget de 6 milliers d'euros.</li>
+                <li>Interprétez : La courbe de perte diminue-t-elle régulièrement, indiquant une bonne convergence ? La courbe prédite capture-t-elle une relation non linéaire ? Comment cela peut-il guider les décisions d'investissement publicitaire ?</li>
+            </ol>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <h3 style="color: #555;">Exercice 2 : Estimation de la consommation énergétique</h3>
+            <p style="font-size: 14px; color: #333;">Une usine souhaite prédire la consommation énergétique (en kWh) en fonction de la température ambiante (en °C). Données :</p>
+            <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>(10, 500), (15, 450), (20, 400), (25, 450), (30, 550)</li>
+            </ul>
+            <p style="font-size: 14px; color: #333;"><strong>Instructions :</strong></p>
+            <ol style="font-size: 14px; color: #333; margin-left: 20px;">
+                <li>Entrez les paires (température, consommation).</li>
+                <li>Entraînez le modèle et observez la courbe de perte et le graphique des prédictions.</li>
+                <li>Prédisez la consommation pour une température de 22 °C.</li>
+                <li>Interprétez : La perte converge-t-elle rapidement ? La courbe prédite reflète-t-elle une relation non linéaire (par exemple, une augmentation à hautes températures) ? Comment cela peut-il aider à optimiser la gestion énergétique ?</li>
+            </ol>
+        </div>
     </div>
 
     <script>
@@ -78,6 +115,10 @@
                 return;
             }
 
+            // Récupérer le nombre d'itérations depuis la boîte de saisie
+            let iterations = parseInt(document.getElementById('iterationsInput').value, 10);
+            if (isNaN(iterations) || iterations < 1) iterations = 100;
+
             // Normalisation des données
             const inputXValues = data.map(d => d.x);
             const inputYValues = data.map(d => d.y);
@@ -110,6 +151,27 @@
             const lossCtx = document.getElementById('lossChart').getContext('2d');
             if (lossChart) lossChart.destroy();
             const lossData = [];
+
+            // Entraînement avec mise à jour de la perte
+            for (let i = 0; i < iterations; i++) {
+                let totalLoss = 0;
+                normalizedData.forEach(d => {
+                    const x = new convnetjs.Vol([d.x]);
+                    const stats = trainer.train(x, [d.y]);
+                    totalLoss += stats.loss;
+                });
+                console.log(`Itération ${i + 1}, Perte moyenne : ${totalLoss / normalizedData.length}`);
+                const avgLoss = totalLoss / normalizedData.length;
+                lossData.push({ x: i + 1, y: avgLoss });
+                //if (i % 10 === 0 || i === iterations - 1) {
+                    
+                   // lossChart.update();
+                //}
+            }
+            console.log("Entraînement terminé");
+            console.log("Paramètres du modèle :", net.toJSON());
+            console.log("Paramètres du modèle :", lossData);
+
             lossChart = new Chart(lossCtx, {
                 type: 'line',
                 data: {
@@ -123,7 +185,10 @@
                 },
                 options: {
                     scales: {
-                        x: { title: { display: true, text: 'Itération' } },
+                        x: {
+                            type: 'linear', // Correction ici
+                            title: { display: true, text: 'Itération' }
+                        },
                         y: { title: { display: true, text: 'Perte' }, beginAtZero: true }
                     },
                     plugins: {
@@ -131,23 +196,8 @@
                     }
                 }
             });
-
-            // Entraînement avec mise à jour de la perte
-            const iterations = 1000;
-            for (let i = 0; i < iterations; i++) {
-                let totalLoss = 0;
-                normalizedData.forEach(d => {
-                    const x = new convnetjs.Vol([d.x]);
-                    const stats = trainer.train(x, [d.y]);
-                    totalLoss += stats.loss;
-                });
-                const avgLoss = totalLoss / normalizedData.length;
-                lossData.push({ x: i + 1, y: avgLoss });
-                if (i % 10 === 0 || i === iterations - 1) {
-                    lossChart.data.datasets[0].data = lossData;
-                    lossChart.update();
-                }
-            }
+            //lossChart.data.datasets[0].data = lossData;
+             //lossChart.update();
 
             // Affichage des résultats
             document.getElementById('results').style.display = 'block';

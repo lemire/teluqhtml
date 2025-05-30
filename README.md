@@ -10,6 +10,8 @@
 - [reglogi.html](https://lemire.github.io/teluqhtml/reglogi.html)  
 - [res.html](https://lemire.github.io/teluqhtml/res.html)  
 - [bits32.html](https://lemire.github.io/teluqhtml/bits32.html)  
+- [unicode.html](https://lemire.github.io/teluqhtml/unicode.html)  
+
 
 - **Laboratoire sur la structure en arbre des documents XML**  
   [Lien](https://m2.teluq.ca/mod/page/view.php?id=130916)

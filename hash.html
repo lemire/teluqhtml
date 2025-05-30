@@ -4,142 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Illustration de la Table de Hachage</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        h1 {
-            text-align: center;
-        }
-        .input-section {
-            margin-bottom: 20px;
-        }
-        input[type="text"] {
-            padding: 8px;
-            width: 200px;
-        }
-        button {
-            padding: 8px 16px;
-            cursor: pointer;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .hash-table-display {
-            display: grid;
-            gap: 10px;
-        }
-        .hash-slot {
-            padding: 10px;
-            border: 1px solid #ccc;
-            background-color: #f9f9f9;
-        }
-        .hash-slot h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-    </style>
 </head>
-<body>
-    <h1>Illustration de la Table de Hachage</h1>
-    <div class="input-section">
-        <input type="text" id="stringInput" placeholder="Entrez une chaîne">
-        <button onclick="addString()">Ajouter</button>
-    </div>
-    <h2>Chaînes Saisies</h2>
-    <table id="stringTable">
-        <thead>
-            <tr>
-                <th>Chaîne</th>
-                <th>Valeur de Hachage</th>
-                <th>Position dans la Table</th>
-            </tr>
-        </thead>
-        <tbody id="stringTableBody"></tbody>
-    </table>
-    <h2>Table de Hachage</h2>
-    <div id="hashTableDisplay" class="hash-table-display"></div>
+<body style="font-family: Arial, sans-serif; margin: 20px; max-width: 800px; margin-left: auto; margin-right: auto;">
+  <h1 style="text-align: center;">Illustration de la table de hachage</h1>
+<p>Saisissez des chaînes de caractères qui seront ajoutées à la table de hachage. Pouvez-vous créer une collision ? </p>
+<div style="margin-bottom: 20px;">
+    <input type="text" id="stringInput" placeholder="Entrez une chaîne" style="padding: 8px; width: 200px;">
+    <button onclick="addString()" style="padding: 8px 16px; cursor: pointer;">Ajouter</button>
+</div>
+<h2>Chaînes Saisies</h2>
+<table id="stringTable" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+    <thead>
+        <tr>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Chaîne</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Valeur de Hachage</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Position dans la Table</th>
+        </tr>
+    </thead>
+    <tbody id="stringTableBody"></tbody>
+</table>
+<h2>Table de Hachage</h2>
+<div id="hashTableDisplay" style="display: grid; gap: 10px;"></div>
 
-    <script>
-        // Taille de la table de hachage
-        const HASH_TABLE_SIZE = 10;
-        // Table de hachage (tableau de tableaux pour gérer les collisions)
-        let hashTable = Array(HASH_TABLE_SIZE).fill().map(() => []);
-        // Liste des chaînes saisies avec leurs métadonnées
-        let strings = [];
+<script>
+    // Taille de la table de hachage
+    const HASH_TABLE_SIZE = 10;
+    // Table de hachage (tableau de tableaux pour gérer les collisions)
+    let hashTable = Array(HASH_TABLE_SIZE).fill().map(() => []);
+    // Liste des chaînes saisies avec leurs métadonnées
+    let strings = [];
 
-        // Fonction de hachage
-        function hashFunction(str) {
-            let sum = 0;
-            for (let char of str) {
-                sum += char.charCodeAt(0);
-            }
-            const index = sum % HASH_TABLE_SIZE;
-            return { hashValue: sum, index: index };
+    // Fonction de hachage
+    function hashFunction(str) {
+        let sum = 0;
+        for (let char of str) {
+            sum += char.charCodeAt(0);
         }
+        const index = sum % HASH_TABLE_SIZE;
+        return {
+            hashValue: sum,
+            index: index
+        };
+    }
 
-        // Ajouter une chaîne
-        function addString() {
-            const input = document.getElementById('stringInput');
-            const str = input.value.trim();
-            if (str) {
-                // Calculer la valeur de hachage et l'index
-                const { hashValue, index } = hashFunction(str);
-                // Ajouter à la liste des chaînes avec métadonnées
-                strings.push({ str, hashValue, index });
-                // Ajouter à la table de hachage
-                hashTable[index].push(str);
-                // Mettre à jour l'affichage
-                updateStringTable();
-                updateHashTableDisplay();
-                // Réinitialiser l'input
-                input.value = '';
-            }
-        }
-
-        // Mettre à jour le tableau des chaînes
-        function updateStringTable() {
-            const tableBody = document.getElementById('stringTableBody');
-            tableBody.innerHTML = '';
-            strings.forEach(({ str, hashValue, index }) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${str}</td>
-                    <td>${hashValue}</td>
-                    <td>${index}</td>
-                `;
-                tableBody.appendChild(row);
+    // Ajouter une chaîne
+    function addString() {
+        const input = document.getElementById('stringInput');
+        const str = input.value.trim();
+        if (str) {
+            // Calculer la valeur de hachage et l'index
+            const {
+                hashValue,
+                index
+            } = hashFunction(str);
+            // Ajouter à la liste des chaînes avec métadonnées
+            strings.push({
+                str,
+                hashValue,
+                index
             });
+            // Ajouter à la table de hachage
+            hashTable[index].push(str);
+            // Mettre à jour l'affichage
+            updateStringTable();
+            updateHashTableDisplay();
+            // Réinitialiser l'input
+            input.value = '';
         }
+    }
 
-        // Mettre à jour l'affichage de la table de hachage
-        function updateHashTableDisplay() {
-            const display = document.getElementById('hashTableDisplay');
-            display.innerHTML = '';
-            for (let i = 0; i < HASH_TABLE_SIZE; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'hash-slot';
-                slot.innerHTML = `<h3>Index ${i}</h3><p>${hashTable[i].length > 0 ? hashTable[i].join(', ') : 'Vide'}</p>`;
-                display.appendChild(slot);
-            };
+    // Mettre à jour le tableau des chaînes
+    function updateStringTable() {
+        const tableBody = document.getElementById('stringTableBody');
+        tableBody.innerHTML = '';
+        strings.forEach(({
+            str,
+            hashValue,
+            index
+        }) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${str}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${hashValue}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${index}</td>
+                `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Mettre à jour l'affichage de la table de hachage
+    function updateHashTableDisplay() {
+        const display = document.getElementById('hashTableDisplay');
+        display.innerHTML = '';
+        for (let i = 0; i < HASH_TABLE_SIZE; i++) {
+            const slot = document.createElement('div');
+            slot.style.cssText = 'padding: 10px; border: 1px solid #ccc; background-color: #f9f9f9;';
+            slot.innerHTML = `<h3 style="margin: 0; font-size: 16px;">Index ${i}</h3><p>${hashTable[i].length > 0 ? hashTable[i].join(', ') : 'Vide'}</p>`;
+            display.appendChild(slot);
         }
+    }
 
-        // Initialiser l'affichage de la table de hachage
-        updateHashTableDisplay();
-    </script>
+    // Initialiser l'affichage de la table de hachage
+    updateHashTableDisplay();
+</script>
 </body>
 </html>

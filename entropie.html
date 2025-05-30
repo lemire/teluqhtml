@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul de l'Entropie de Shannon</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 600px;">
+        <h1 style="font-size: 24px; color: #333; text-align: center; margin-bottom: 20px;">Calcul de l'Entropie de Shannon</h1>
+        <textarea id="inputText" rows="10" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 15px;">ALCESTE
+C’est pour mon malheur que le ciel m’a fait naître
+Avec trop de droiture, et je ne puis me feindre :
+Je dis toujours, Madame, au fond de ma pensée,
+Ce que mon cœur me dicte, et non ce qu’on m’enseigne.
+Aussi dans votre cour je ne puis point me plaire,
+Car trop d’indignités s’y commettent, je trouve,
+Et mon cœur, qui s’irrite, éclate et se découvre.
+Oui, je vois ces défauts dont votre âme s’offense,
+Et, bien que sans témoin, j’ose avec confiance
+Vous dire qu’en ce lieu je ne puis demeurer,
+Tant mon cœur est blessé de ce qu’il faut louer.
+
+CÉLIMÈNE
+Vous êtes, je le vois, d’une humeur bien chagrine,
+Et votre grand courroux me divertit beaucoup.
+Mais il faut que je rie, et non que je m’obstine :
+Car enfin votre mal ne peut être si grand
+Que de tant de vertus le brillant assemblage
+Ne doive un peu calmer votre cruel message.
+Si votre cœur s’aigrit pour un peu de contrainte,
+Il faut, pour l’adoucir, lui faire un peu de feinte :
+Car enfin, dans le monde, il faut bien se plier,
+Et l’on ne peut toujours dire tout ce qu’on pense.
+
+ALCESTE
+Non, Madame, non, je ne puis me démentir :
+Mon cœur parle toujours, et je veux lui suffire.
+Si quelque complaisance entre en mon entretien,
+Ce n’est que par respect, et non par agrément.
+Je ne puis me résoudre à ces lâches caresses
+Qu’on prodigue en ce lieu pour de fausses tendresses.
+Je veux être sincère, et que l’on me connaisse
+Pour ce que je suis, sans feinte ni détresse.</textarea>
+        <button onclick="calculateEntropy()" style="width: 100%; padding: 10px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">Calculer</button>
+        <p id="result" style="margin-top: 15px; font-size: 16px; color: #333; text-align: center;"></p>
+        <p style="margin-top: 20px; font-size: 14px; color: #555; line-height: 1.6;">
+            <strong>Suggestion pour l'étudiant :</strong> Essayez de calculer l'entropie d'un texte d'un autre auteur pour comparer les résultats. Par exemple, vous pourriez utiliser un extrait de <em>Les Fleurs du Mal</em> de Charles Baudelaire, <em>Les Misérables</em> de Victor Hugo, ou <em>Candide</em> de Voltaire. Ces œuvres, disponibles sur des sites comme <a href="https://www.gutenberg.org" style="color: #4CAF50; text-decoration: none;">Project Gutenberg</a>, offrent des styles variés qui peuvent influencer l'entropie.
+        </p>
+    </div>
+
+    <script>
+        function calculateEntropy() {
+            const text = document.getElementById('inputText').value;
+            const resultElement = document.getElementById('result');
+
+            if (!text) {
+                resultElement.textContent = 'Veuillez entrer un texte.';
+                return;
+            }
+
+            // Compter la fréquence de chaque caractère
+            const freq = {};
+            for (let char of text) {
+                freq[char] = (freq[char] || 0) + 1;
+            }
+
+            // Calculer l'entropie de Shannon
+            let entropy = 0;
+            const len = text.length;
+            for (let char in freq) {
+                const p = freq[char] / len;
+                entropy -= p * Math.log2(p);
+            }
+
+            // Afficher le résultat avec 4 décimales
+            resultElement.textContent = `Entropie de Shannon : ${entropy.toFixed(4)} bits par caractère`;
+        }
+    </script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# INF6450
+# Web apps
 
 
 - [css.html](https://lemire.github.io/teluqhtml/css.html)

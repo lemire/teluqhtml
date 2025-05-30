@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculateur Entier 32 bits</title>
+</head>
+<body style="font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f0f0; margin: 0; padding: 20px;">
+    <h1 style="color: #333; font-size: 24px; margin-bottom: 20px;">Calculateur 32 bits</h1>
+    <div style="background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 350px;">
+        <p style="font-size: 14px; color: #333; margin-bottom: 10px;">Valeurs suggérées : -1, -3, 8, 15, 42, -100</p>
+        <input type="number" id="inputNumber1" placeholder="Entrez le premier entier" style="padding: 10px; font-size: 16px; width: 100%; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+        <input type="number" id="inputNumber2" placeholder="Entrez le second entier" style="padding: 10px; font-size: 16px; width: 100%; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+        <select id="operation" style="padding: 10px; font-size: 16px; width: 100%; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+            <option value="add">Addition (+)</option>
+            <option value="subtract">Soustraction (-)</option>
+            <option value="multiply">Multiplication (*)</option>
+            <option value="divide">Division (/)</option>
+            <option value="modulo">Reste (%)</option>
+        </select>
+        <button onclick="calculate()" style="padding: 10px 20px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Calculer</button>
+        <p id="error" style="margin-top: 10px; font-size: 14px; color: red; display: none;"></p>
+        <canvas id="bitCanvas" style="margin-top: 20px; display: none;"></canvas>
+    </div>
+
+    <script>
+        function toBinary32(num) {
+            if (num >= 0) {
+                return num.toString(2).padStart(32, '0');
+            } else {
+                return (num >>> 0).toString(2).padStart(32, '0');
+            }
+        }
+
+        function validateNumber(num, inputName) {
+            if (isNaN(num)) {
+                return `Veuillez entrer un nombre valide pour ${inputName}`;
+            }
+            if (num < -2147483648 || num > 2147483647) {
+                return `${inputName} doit être entre -2³¹ et 2³¹-1`;
+            }
+            return null;
+        }
+
+        function drawBits(canvas, num1, num2, result, opSymbol) {
+            const ctx = canvas.getContext('2d');
+            const bitWidth = 30;
+            const bitHeight = 20;
+            const spacing = 5;
+            const labelWidth = 40;
+            const colWidth = bitWidth + spacing + 20;
+
+            // Ajuster la taille du canvas
+            canvas.width = 3 * colWidth + labelWidth + 2 * spacing;
+            canvas.height = 32 * bitHeight + 2 * spacing + 20;
+            canvas.style.display = 'block';
+
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dessiner les étiquettes de position des bits
+            for (let i = 0; i < 32; i++) {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#333';
+                ctx.textAlign = 'right';
+                ctx.fillText(31 - i, labelWidth - 5, i * bitHeight + bitHeight / 2 + 5);
+            }
+
+            // Fonction pour dessiner une colonne de bits
+            function drawBitCol(binary, x, label, labelColor) {
+                ctx.fillStyle = labelColor;
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(label, x + bitWidth / 2, 32 * bitHeight + 20);
+                for (let i = 0; i < 32; i++) {
+                    ctx.fillStyle = binary[i] === '1' ? '#2196F3' : '#ccc';
+                    ctx.fillRect(x, i * bitHeight, bitWidth - 1, bitHeight - 1);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(binary[i], x + bitWidth / 2, i * bitHeight + bitHeight - 5);
+                }
+            }
+
+            // Dessiner les bits pour num1, num2, et le résultat
+            drawBitCol(toBinary32(num1), labelWidth + spacing, num1.toString(), '#333');
+            drawBitCol(toBinary32(num2), labelWidth + colWidth + spacing, `${opSymbol} ${num2}`, '#333');
+            drawBitCol(toBinary32(result), labelWidth + 2 * colWidth + spacing, `= ${result}`, '#d32f2f');
+        }
+
+        function calculate() {
+            const input1 = document.getElementById('inputNumber1').value;
+            const input2 = document.getElementById('inputNumber2').value;
+            const operation = document.getElementById('operation').value;
+            const error = document.getElementById('error');
+            const canvas = document.getElementById('bitCanvas');
+            error.style.display = 'none';
+            canvas.style.display = 'none';
+
+            const num1 = parseInt(input1);
+            const num2 = parseInt(input2);
+
+            // Validation des entrées
+            let errorMsg = validateNumber(num1, 'le premier entier') || validateNumber(num2, 'le second entier');
+            if (operation === 'divide' && num2 === 0) {
+                errorMsg = 'Division par zéro impossible';
+            }
+            if (errorMsg) {
+                error.textContent = errorMsg;
+                error.style.display = 'block';
+                return;
+            }
+
+            // Calcul et conversion en binaire
+            let resultNum;
+            let opSymbol;
+            switch (operation) {
+                case 'add':
+                    resultNum = num1 + num2;
+                    opSymbol = '+';
+                    break;
+                case 'subtract':
+                    resultNum = num1 - num2;
+                    opSymbol = '-';
+                    break;
+                case 'multiply':
+                    resultNum = num1 * num2;
+                    opSymbol = '*';
+                    break;
+                case 'divide':
+                    resultNum = Math.floor(num1 / num2);
+                    opSymbol = '/';
+                    break;
+                case 'modulo':
+                    resultNum = num1 % num2;
+                    opSymbol = '%';
+                    break;
+            }
+
+            // Vérifier si le résultat est dans la plage 32 bits
+            if (resultNum < -2147483648 || resultNum > 2147483647) {
+                error.textContent = 'Le résultat dépasse la plage des entiers 32 bits';
+                error.style.display = 'block';
+                return;
+            }
+
+            // Dessiner la représentation graphique des bits
+            drawBits(canvas, num1, num2, resultNum, opSymbol);
+        }
+    </script>
+</body>
+</html>

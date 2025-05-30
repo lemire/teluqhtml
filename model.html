@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modèle de la langue caractère par caractère</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 600px;">
+        <h1 style="font-size: 24px; color: #333; text-align: center; margin-bottom: 20px;">Modèle de la langue caractère par caractère</h1>
+        <p>
+À partir du texte source, ce modèle de langue calcule les probabilités des lettres suivantes en fonction de la lettre précédente. Il est utile pour prédire les lettres suivantes dans un texte donné. Naturellement, c'est un tout petit modèle de la langue.
+        </p>
+        <!-- Section pour le texte source -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Texte source (éditable)</h2>
+            <textarea id="sourceText" rows="10" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; resize: vertical; margin-bottom: 10px;">
+Un an après le début du mandat du gouvernement, l’effet des mesures prises pour réduire les coûts élevés, améliorer les soins de santé, créer davantage de bons emplois et soulager les Manitobains commence à se faire sentir, mais il reste encore du travail à faire. Le Discours du Trône prévoit un plan qui permettra au gouvernement de continuer de répondre aux besoins des familles.
+Parmi les engagements pris dans le Discours du Trône figurent les suivants :
+faire des progrès dans le secteur de la santé : en s’appuyant sur la création nette de 870 emplois dans ce domaine, l’ouverture de cliniques à Winnipeg et à Brandon, une nouvelle stratégie visant à réduire les temps d’attente dans les services d’urgence, 800 nouvelles interventions chirurgicales de la hanche et du genou au Centre de santé régional de Selkirk et le déploiement d’une version plastifiée et améliorée de la carte de santé d’ici la fin de l’année;
+réduire le montant de vos factures : avec un plan consistant à geler les tarifs d’électricité pendant un an ainsi que de nouvelles mesures pour soulager les locataires et les propriétaires et mettre fin aux contrats monopolistiques qui font grimper les prix des produits d’épicerie;
+faire croître l’économie : avec une nouvelle stratégie en matière de minéraux critiques, un nouveau programme de garantie de prêts pour les Autochtones afin de faciliter le démarrage de grands projets énergétiques ainsi que le lancement de grands projets d’infrastructure, comme l’élargissement à quatre voies de la route transcanadienne Est;
+renforcer la sécurité de nos centres-villes et de nos quartiers : avec la stratégie de sécurité publique, qui permettra d’accroître la présence policière dans les rues, de recruter plus de travailleurs de santé mentale qui oeuvreront aux côtés des premiers intervenants, de lutter contre le trafic de drogues et de retirer les armes dangereuses des rues de la province;
+donner aux enfants la liberté d’être des enfants : en s’appuyant sur le programme manitobain universel de repas à l’école et l’interdiction des téléphones cellulaires en classe pour aider les enfants à se concentrer sur l’apprentissage, la modernisation des programmes d’études de sciences de la nature, l’ajout au programme de 9e année d’un module consacré à la culture financière et un engagement à faire en sorte que tous les membres des Premières Nations puissent voter aux élections scolaires;
+protéger l’environnement : avec le nouveau Plan d’énergie abordable du gouvernement, l’amélioration des codes sur l’efficacité énergétique et un nouveau groupe de travail composé d’intervenants qui contribueront à protéger le lac Winnipeg;
+protéger la liberté et la démocratie : avec un comité multipartite qui explorera l’avenir d’un journalisme local diversifié et une enquête sur la construction du quartier général du Service de police de Winnipeg;
+rendre hommage à notre passé et donner espoir en notre avenir : avec une nouvelle statue représentant une mère bison et son petit, qui sera érigée sur le parterre avant des terrains du palais législatif, et une nouvelle distinction pour les anciens combattants et les autres héros du Manitoba.</textarea>
+            <button onclick="buildModel()" style="width: 100%; padding: 10px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">Construire le modèle</button>
+        </div>
+
+        <!-- Section pour la sélection de la température -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Sélectionner la température</h2>
+            <input type="range" id="temperature" min="0.01" max="2" step="0.01" value="1" style="width: 100%; margin-bottom: 10px;">
+            <p style="font-size: 14px; color: #333;">Température: <span id="tempValue">1.00</span></p>
+        </div>
+
+        <!-- Section pour la saisie des lettres -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Tapez des lettres</h2>
+            <input type="text" id="inputChar" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;" placeholder="Ex: abc">
+            <button onclick="continueText()" style="width: 100%; padding: 10px; font-size: 16px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">Continuer le texte</button>
+        </div>
+
+        <!-- Section pour les suggestions -->
+        <div>
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Suggestions de lettres suivantes</h2>
+            <div id="suggestions" style="font-size: 14px; color: #333; padding: 10px; border: 1px solid #ccc; border-radius: 4px; min-height: 100px;"></div>
+        </div>
+    </div>
+
+    <script>
+        let model = {};
+
+        // Mettre à jour l'affichage de la température et les suggestions
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('tempValue').textContent = this.value;
+            const input = document.getElementById('inputChar').value.toLowerCase();
+            const lastChar = input.slice(-1);
+            updateSuggestions(lastChar);
+        });
+
+        // Construire le modèle de langue
+        function buildModel() {
+            const suggestionsDiv = document.getElementById('suggestions');
+            suggestionsDiv.innerHTML = '<p style="color: #333;">Je mets à jour le modèle...</p>';
+
+            const text = document.getElementById('sourceText').value;
+            model = {};
+
+            // Compter les transitions caractère par caractère
+            for (let i = 0; i < text.length - 1; i++) {
+                const currentChar = text[i];
+                const nextChar = text[i + 1];
+
+                if (!model[currentChar]) {
+                    model[currentChar] = {};
+                }
+                model[currentChar][nextChar] = (model[currentChar][nextChar] || 0) + 1;
+            }
+
+            // Convertir en probabilités
+            for (let currentChar in model) {
+                const total = Object.values(model[currentChar]).reduce((sum, count) => sum + count, 0);
+                for (let nextChar in model[currentChar]) {
+                    model[currentChar][nextChar] = model[currentChar][nextChar] / total;
+                }
+            }
+
+            // Afficher le message de confirmation après 1 seconde et vider le champ de saisie
+            setTimeout(() => {
+                suggestionsDiv.innerHTML = '<p style="color: #333;">Le modèle est à jour. Tapez des lettres pour voir les suggestions.</p>';
+                document.getElementById('inputChar').value = '';
+            }, 1000);
+        }
+
+        // Appliquer la température aux probabilités
+        function applyTemperature(probs, temperature) {
+            // Convertir les probabilités en logits
+            const logits = {};
+            for (let char in probs) {
+                logits[char] = Math.log(probs[char]);
+            }
+
+            // Diviser par la température
+            for (let char in logits) {
+                logits[char] = logits[char] / temperature;
+            }
+
+            // Convertir en probabilités via softmax
+            const expLogits = {};
+            let sumExp = 0;
+            for (let char in logits) {
+                expLogits[char] = Math.exp(logits[char]);
+                sumExp += expLogits[char];
+            }
+
+            const newProbs = {};
+            for (let char in expLogits) {
+                newProbs[char] = expLogits[char] / sumExp;
+            }
+
+            return newProbs;
+        }
+
+        // Mettre à jour les suggestions
+        function updateSuggestions(char) {
+            const suggestionsDiv = document.getElementById('suggestions');
+            const temperature = parseFloat(document.getElementById('temperature').value);
+
+            if (!char) {
+                suggestionsDiv.innerHTML = '<p style="color: #333;">Veuillez entrer une lettre.</p>';
+                return;
+            }
+
+            if (!model[char]) {
+                suggestionsDiv.innerHTML = '<p style="color: #333;">Aucune suggestion pour cette lettre.</p>';
+                return;
+            }
+
+            // Appliquer la température
+            const adjustedProbs = applyTemperature(model[char], temperature);
+
+            // Obtenir les suggestions triées par probabilité
+            const suggestions = Object.entries(adjustedProbs)
+                .map(([nextChar, prob]) => ({ char: nextChar, prob }))
+                .sort((a, b) => b.prob - a.prob);
+
+            // Afficher les suggestions
+            let content = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            suggestions.forEach(suggestion => {
+                content += `
+                    <li style="margin-bottom: 5px;">
+                        Lettre: <strong>${suggestion.char === ' ' ? '[espace]' : suggestion.char}</strong>, 
+                        Probabilité: ${(suggestion.prob * 100).toFixed(2)}%
+                    </li>`;
+            });
+            content += '</ul>';
+            suggestionsDiv.innerHTML = content;
+        }
+
+        // Générer un caractère aléatoire basé sur les probabilités
+        function getRandomNextChar(currentChar) {
+            if (!model[currentChar]) {
+                return null;
+            }
+
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const adjustedProbs = applyTemperature(model[currentChar], temperature);
+
+            const rand = Math.random();
+            let cumulative = 0;
+
+            for (let nextChar in adjustedProbs) {
+                cumulative += adjustedProbs[nextChar];
+                if (rand <= cumulative) {
+                    return nextChar;
+                }
+            }
+            return Object.keys(adjustedProbs)[0]; // Fallback
+        }
+
+        // Continuer le texte
+        function continueText() {
+            const input = document.getElementById('inputChar').value.toLowerCase();
+            const suggestionsDiv = document.getElementById('suggestions');
+
+            if (!input) {
+                suggestionsDiv.innerHTML = '<p style="color: #d32f2f;">Veuillez entrer au moins une lettre.</p>';
+                return;
+            }
+
+            let currentChar = input.slice(-1); // Dernière lettre
+            let generated = input;
+
+            // Générer 150 caractères supplémentaires
+            for (let i = 0; i < 150; i++) {
+                const nextChar = getRandomNextChar(currentChar);
+                if (!nextChar) {
+                    suggestionsDiv.innerHTML = '<p style="color: #d32f2f;">Impossible de continuer : aucune transition pour la lettre \'' + currentChar + '\'.</p>';
+                    return;
+                }
+                generated += nextChar;
+                currentChar = nextChar;
+            }
+
+            // Afficher le texte généré
+            suggestionsDiv.innerHTML = `
+                <p style="color: #333; margin-bottom: 10px;">Texte continué (150 caractères ajoutés) :</p>
+                <p style="font-size: 14px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">${generated}</p>
+            `;
+        }
+
+        // Gérer la saisie des lettres
+        document.getElementById('inputChar').addEventListener('input', function() {
+            const input = this.value.toLowerCase();
+            const lastChar = input.slice(-1); // Prendre la dernière lettre
+            updateSuggestions(lastChar);
+        });
+
+        // Construire le modèle au chargement initial
+        buildModel();
+    </script>
+</body>
+</html>

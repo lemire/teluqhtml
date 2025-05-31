@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse de Similarité Vectorielle TF-IDF</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+    <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 800px;">
+        <h1 style="font-size: 24px; color: #333; text-align: center; margin-bottom: 20px;">Analyse de Similarité Vectorielle TF-IDF</h1>
+
+        <!-- Section pour la requête -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Entrez votre requête</h2>
+            <input type="text" id="queryInput" style="width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;" placeholder="Ex: science fiction">
+            <button onclick="calculateSimilarity()" style="width: 100%; padding: 10px; font-size: 16px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s;">Calculer la similarité</button>
+        </div>
+
+        <!-- Section pour les documents -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Documents</h2>
+            <div id="documentsList" style="max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></div>
+        </div>
+
+        <!-- Section pour les mots distincts -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Mots distincts et fréquences</h2>
+            <div id="wordFrequencies" style="font-size: 14px; color: #333; max-height: 150px; overflow-y: auto; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></div>
+        </div>
+
+        <!-- Section pour les résultats de similarité -->
+        <div style="margin-bottom: 20px;">
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Similarité avec les documents</h2>
+            <div id="similarityResults" style="font-size: 14px; color: #333; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></div>
+        </div>
+
+        <!-- Section pour l'explication du calcul -->
+        <div>
+            <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Explication du calcul</h2>
+            <div id="calculationExplanation" style="font-size: 14px; color: #333; padding: 10px; border: 1px solid #ccc; border-radius: 4px; line-height: 1.6;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Documents prédéfinis
+        const documents = [
+            "La science-fiction explore des futurs possibles avec des technologies avancées.",
+            "Les robots et l'intelligence artificielle transforment notre société.",
+            "Le voyage spatial est un rêve devenu réalité pour l'humanité.",
+            "La dystopie montre des sociétés oppressives et des futurs sombres.",
+            "Les extraterrestres dans la fiction captivent l'imagination humaine.",
+            "La technologie de clonage soulève des questions éthiques complexes.",
+            "Les mondes virtuels offrent des expériences immersives uniques.",
+            "L'exploration spatiale inspire des innovations scientifiques.",
+            "La littérature utopique imagine des sociétés parfaites et harmonieuses.",
+            "Les machines intelligentes défient les limites de l'humanité."
+        ];
+
+        // Afficher les documents dans des textareas
+        function displayDocuments() {
+            const documentsListDiv = document.getElementById('documentsList');
+            let content = '';
+            documents.forEach((doc, index) => {
+                content += `
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size: 14px; color: #333; font-weight: bold;">Document ${index + 1}</label>
+                        <textarea rows="3" readonly style="width: 100%; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; resize: none;">${doc}</textarea>
+                    </div>`;
+            });
+            documentsListDiv.innerHTML = content;
+        }
+        displayDocuments();
+
+        // Prétraitement : convertir en minuscules et supprimer la ponctuation
+        function preprocess(text) {
+            return text.toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(word => word);
+        }
+
+        // Construire le vocabulaire et calculer les fréquences
+        const allWords = new Set();
+        const wordFreq = {};
+        const processedDocs = documents.map(doc => preprocess(doc));
+        processedDocs.forEach(words => {
+            words.forEach(word => {
+                allWords.add(word);
+                wordFreq[word] = (wordFreq[word] || 0) + 1;
+            });
+        });
+        const vocabulary = Array.from(allWords);
+
+        // Afficher les fréquences des mots
+        function displayWordFrequencies() {
+            const wordFrequenciesDiv = document.getElementById('wordFrequencies');
+            let content = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            for (let word in wordFreq) {
+                content += `<li style="margin-bottom: 5px;">${word}: ${wordFreq[word]}</li>`;
+            }
+            content += '</ul>';
+            wordFrequenciesDiv.innerHTML = content;
+        }
+        displayWordFrequencies();
+
+        // Calculer TF-IDF pour un document
+        function calculateTFIDF(docWords, allDocs, includeDetails = false) {
+            const tf = {};
+            const tfidf = {};
+            const docCount = allDocs.length;
+
+            // Calculer TF (fréquence du terme)
+            docWords.forEach(word => {
+                tf[word] = (tf[word] || 0) + 1;
+            });
+            for (let word in tf) {
+                tf[word] /= docWords.length;
+            }
+
+            // Calculer IDF
+            const idf = {};
+            vocabulary.forEach(word => {
+                let docsWithWord = allDocs.filter(doc => doc.includes(word)).length;
+                idf[word] = Math.log(docCount / (1 + docsWithWord));
+            });
+
+            // Calculer TF-IDF
+            vocabulary.forEach(word => {
+                tfidf[word] = (tf[word] || 0) * idf[word];
+            });
+
+            // Créer le vecteur TF-IDF
+            const vector = vocabulary.map(word => tfidf[word] || 0);
+
+            if (includeDetails) {
+                return { vector, tf, idf, tfidf };
+            }
+            return vector;
+        }
+
+        // Calculer la similarité cosinus
+        function cosineSimilarity(vecA, vecB) {
+            const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+            const normA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+            const normB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+            if (normA === 0 || normB === 0) return 0;
+            return dotProduct / (normA * normB);
+        }
+
+        // Calculer les vecteurs TF-IDF pour tous les documents
+        const docVectors = processedDocs.map(doc => calculateTFIDF(doc, processedDocs));
+
+        // Gérer le calcul de similarité et l'explication
+        function calculateSimilarity() {
+            const query = document.getElementById('queryInput').value;
+            const resultsDiv = document.getElementById('similarityResults');
+            const explanationDiv = document.getElementById('calculationExplanation');
+
+            if (!query) {
+                resultsDiv.innerHTML = '<p style="color: #d32f2f;">Veuillez entrer une requête.</p>';
+                explanationDiv.innerHTML = '';
+                return;
+            }
+
+            // Prétraiter la requête
+            const queryWords = preprocess(query);
+            const queryTFIDF = calculateTFIDF(queryWords, processedDocs, true);
+            const queryVector = queryTFIDF.vector;
+
+            // Calculer la similarité avec chaque document
+            const similarities = docVectors.map((docVector, i) => ({
+                docId: i + 1,
+                text: documents[i],
+                similarity: cosineSimilarity(queryVector, docVector)
+            }));
+
+            // Trier par similarité décroissante
+            similarities.sort((a, b) => b.similarity - a.similarity);
+
+            // Afficher les résultats
+            let resultsContent = '<ul style="list-style: none; padding: 0; margin: 0;">';
+            similarities.forEach(result => {
+                resultsContent += `
+                    <li style="margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border-radius: 4px;">
+                        <strong>Document ${result.docId} (Similarité: ${(result.similarity * 100).toFixed(2)}%)</strong><br>
+                        ${result.text}
+                    </li>`;
+            });
+            resultsContent += '</ul>';
+            resultsDiv.innerHTML = resultsContent;
+
+            // Générer l'explication du calcul
+            const topDoc = similarities[0];
+            const topDocIndex = topDoc.docId - 1;
+            const topDocWords = processedDocs[topDocIndex];
+            const topDocTFIDF = calculateTFIDF(topDocWords, processedDocs, true);
+
+            let explanation = `
+                <p><strong>Étape 1 : Prétraitement</strong><br>
+                Le texte de la requête "${query}" et des documents est converti en minuscules, la ponctuation est supprimée, et le texte est divisé en mots. Pour la requête, cela donne : [${queryWords.join(', ')}].</p>
+                <p><strong>Étape 2 : Calcul des vecteurs TF-IDF</strong><br>
+                - <strong>TF (Fréquence du terme)</strong> : Compte la fréquence de chaque mot dans la requête ou le document, divisée par le nombre total de mots. Exemple pour la requête : ${Object.entries(queryTFIDF.tf).map(([word, val]) => `${word}: ${(val * 100).toFixed(2)}%`).join(', ')}.<br>
+                - <strong>IDF (Fréquence inverse des documents)</strong> : Mesure la rareté d'un mot dans tous les documents. Exemple : ${Object.entries(queryTFIDF.idf).slice(0, 3).map(([word, val]) => `${word}: ${val.toFixed(2)}`).join(', ')} (et plus).<br>
+                - <strong>TF-IDF</strong> : Produit de TF et IDF pour chaque mot, formant un vecteur. Pour la requête, les 3 premières valeurs sont : [${queryVector.slice(0, 3).map(v => v.toFixed(4)).join(', ')}, ...]. Pour le document ${topDoc.docId}, les 3 premières valeurs sont : [${topDocTFIDF.vector.slice(0, 3).map(v => v.toFixed(4)).join(', ')}, ...].</p>
+                <p><strong>Étape 3 : Similarité cosinus</strong><br>
+                La similarité cosinus mesure l'angle entre les vecteurs TF-IDF de la requête et du document. La formule est : (somme des produits des coordonnées) / (produit des normes des vecteurs). Pour le document ${topDoc.docId} (score : ${(topDoc.similarity * 100).toFixed(2)}%) :<br>
+                - Produit scalaire : ${queryVector.reduce((sum, a, i) => sum + a * topDocTFIDF.vector[i], 0).toFixed(4)}<br>
+                - Norme de la requête : ${Math.sqrt(queryVector.reduce((sum, a) => sum + a * a, 0)).toFixed(4)}<br>
+                - Norme du document : ${Math.sqrt(topDocTFIDF.vector.reduce((sum, b) => sum + b * b, 0)).toFixed(4)}<br>
+                - Similarité : ${(topDoc.similarity * 100).toFixed(2)}%.</p>
+                <p><strong>Exemple</strong> : Un score de 39.19% (comme observé) signifie que l'angle entre les vecteurs est modérément proche, indiquant une similarité partielle due à des mots communs comme "${queryWords[0] || 'aucun'}" présents dans le document.</p>
+            `;
+            explanationDiv.innerHTML = explanation;
+        }
+    </script>
+</body>
+</html>

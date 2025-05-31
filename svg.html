@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application SVG Éditable</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; display: flex; flex-direction: column; align-items: center;">
+    <h1>Application SVG : Code Éditable et Rendu</h1>
+    <div style="display: flex; justify-content: space-between; width: 80%; max-width: 1200px; margin-top: 20px;">
+        <div style="width: 45%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <h2 style="text-align: center;">Code SVG</h2>
+            <textarea id="svgCode" style="width: 100%; height: 300px; background: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace; resize: vertical;">
+<svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+    <rect x="20" y="20" width="100" height="60" style="fill: #3498db; stroke: #2c3e50; stroke-width: 2;" />
+    <circle cx="200" cy="50" r="30" style="fill: #e74c3c; stroke: #2c3e50; stroke-width: 2;" />
+    <line x1="20" y1="120" x2="280" y2="180" style="stroke: #27ae60; stroke-width: 4;" />
+</svg>
+            </textarea>
+        </div>
+        <div style="width: 45%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;">
+            <h2 style="text-align: center;">Rendu SVG</h2>
+            <div id="svgRender">
+                <svg width="300" height="200" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="20" width="100" height="60" style="fill: #3498db; stroke: #2c3e50; stroke-width: 2;" />
+                    <circle cx="200" cy="50" r="30" style="fill: #e74c3c; stroke: #2c3e50; stroke-width: 2;" />
+                    <line x1="20" y1="120" x2="280" y2="180" style="stroke: #27ae60; stroke-width: 4;" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <script>
+        const textarea = document.getElementById('svgCode');
+        const renderDiv = document.getElementById('svgRender');
+
+        textarea.addEventListener('input', () => {
+            try {
+                renderDiv.innerHTML = textarea.value;
+            } catch (error) {
+                console.error('Erreur SVG:', error);
+            }
+        });
+    </script>
+</body>
+</html>

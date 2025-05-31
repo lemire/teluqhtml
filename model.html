@@ -8,9 +8,22 @@
 <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; min-height: 100vh;">
     <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 100%; max-width: 600px;">
         <h1 style="font-size: 24px; color: #333; text-align: center; margin-bottom: 20px;">Modèle de la langue caractère par caractère</h1>
-        <p>
-À partir du texte source, ce modèle de langue calcule les probabilités des lettres suivantes en fonction de la lettre précédente. Il est utile pour prédire les lettres suivantes dans un texte donné. Naturellement, c'est un tout petit modèle de la langue.
-        </p>
+
+    <p>Le modèle commence par calculer les probabilités des lettres suivantes en fonction de la lettre courante, en comptant combien de fois chaque transition (par exemple, de <code>'a'</code> à <code>'b'</code>) apparaît dans le texte source. Ces fréquences sont divisées par le nombre total de transitions à partir de la lettre courante pour obtenir une distribution de probabilité conditionnelle (par exemple, <code>P('b'|'a') = 0.3</code>). La température intervient pour ajuster ces probabilités afin de contrôler la <em>randomness</em> des prédictions. Voici comment :</p>
+    
+    <ul>
+        <li><strong>Conversion en logits :</strong> Les probabilités initiales (par exemple, <code>P('b'|'a') = 0.3</code>) sont transformées en logits en prenant leur logarithme naturel (<code>ln(P)</code>). Cela convertit les probabilités en une échelle additive, plus facile à manipuler. Par exemple, si <code>P('b'|'a') = 0.3</code>, le logit est <code>ln(0.3) ≈ -1.204</code>.</li>
+        <li><strong>Application de la température :</strong> Les logits sont divisés par la valeur de la température (<code>T</code>). Si <code>T = 1</code>, les logits restent inchangés. Si <code>T < 1</code> (par exemple, <code>T = 0.1</code>), les logits sont amplifiés (divisés par un petit nombre, donc multipliés en magnitude), ce qui accentue les différences entre probabilités. Si <code>T > 1</code> (par exemple, <code>T = 2</code>), les logits sont réduits, rendant les probabilités plus similaires. Mathématiquement, pour un logit <code>L</code>, le logit ajusté est <code>L' = L / T</code>.</li>
+        <li><strong>Retour aux probabilités via softmax :</strong> Les logits ajustés sont reconvertis en probabilités à l'aide de la fonction <em>softmax</em>. Cela implique de calculer l'exponentielle de chaque logit ajusté (<code>exp(L')</code>) et de normaliser ces valeurs pour qu'elles somment à 1. La formule softmax est : <code>P'(x) = exp(L'_x) / Σ(exp(L'_y))</code>, où <code>x</code> et <code>y</code> sont les lettres possibles. Cela donne une nouvelle distribution de probabilité.</li>
+    </ul>
+    
+    <ul>
+        <li><strong>T basse (proche de 0) :</strong> Les logits sont fortement amplifiés, ce qui rend les exponentielles des logits élevés (correspondant aux probabilités initiales élevées) beaucoup plus grandes que les autres. Après <em>softmax</em>, les lettres les plus probables dominent presque totalement, rendant les prédictions très prévisibles.</li>
+        <li><strong>T = 1 :</strong> Les logits ne changent pas, donc les probabilités restent celles calculées initialement.</li>
+        <li><strong>T élevée (> 1) :</strong> Les logits sont atténués, réduisant les écarts entre eux. Après <em>softmax</em>, les probabilités des lettres deviennent plus uniformes, augmentant la chance de choisir des lettres moins probables, ce qui introduit plus de <em>randomness</em>.</li>
+    </ul>
+    
+    <p>La température permet de contrôler l'équilibre entre <strong>cohérence</strong> (favoriser les lettres probables, pour un texte proche du style du texte source) et <strong>créativité</strong> (permettre des choix moins probables, pour explorer des séquences inattendues). Cela rend le modèle adaptable à différents cas d'usage, comme générer du texte réaliste ou expérimenter avec des variations.</p>
         <!-- Section pour le texte source -->
         <div style="margin-bottom: 20px;">
             <h2 style="font-size: 18px; color: #333; margin-bottom: 10px;">Texte source (éditable)</h2>
@@ -65,7 +78,6 @@ rendre hommage à notre passé et donner espoir en notre avenir : avec une nouve
                     <strong>Génération de texte à partir de séquences</strong><br>
                     Saisissez trois séquences initiales dans le champ "Tapez des lettres" : "le", "un", et "za". Pour chaque séquence, utilisez une température de 1.0 et cliquez sur "Continuer le texte" pour générer 150 caractères. Analysez la cohérence des textes générés (ex. : forment-ils des mots reconnaissables ?). Répondez : Pourquoi certaines séquences produisent-elles des résultats moins cohérents ? 
                 </li>
- à
             </ol>
         </div>
     </div>

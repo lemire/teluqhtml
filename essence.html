@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploration des courbes d'offre et de demande : Québec</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4;">
+
+    <h1 style="text-align: center; color: #333;">Courbes de l'offre et de la demande : Impact d'une taxe carbone et d'un prix maximal au Québec</h1>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div style="max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <canvas id="supplyDemandChart" style="max-width: 100%;"></canvas>
+        <div style="margin: 20px 0; text-align: center;">
+            <div style="margin-bottom: 10px;">
+                <label for="carbonTax" style="font-weight: bold; margin-right: 10px;">Taxe carbone ($/litre) :</label>
+                <input type="range" id="carbonTax" min="0" max="0.5" step="0.01" value="0.10" style="width: 200px;">
+                <span id="taxValue" style="font-weight: bold; color: #007bff;">0.10</span>
+            </div>
+            <div>
+                <label for="maxPrice" style="font-weight: bold; margin-right: 10px;">Prix maximal ($/litre) :</label>
+                <input type="range" id="maxPrice" min="0" max="3" step="0.01" value="2" style="width: 200px;">
+                <span id="maxPriceValue" style="font-weight: bold; color: #007bff;">2.00</span>
+            </div>
+        </div>
+        <table id="equilibriumTable" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Taxe carbone ($/litre)</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Prix maximal ($/litre)</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Prix effectif ($/litre)</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">Quantité échangée (M litres)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td id="tableTax" style="border: 1px solid #ddd; padding: 8px; text-align: center;">0.10</td>
+                    <td id="tableMaxPrice" style="border: 1px solid #ddd; padding: 8px; text-align: center;">2.00</td>
+                    <td id="tablePrice" style="border: 1px solid #ddd; padding: 8px; text-align: center;">1.56</td>
+                    <td id="tableQuantity" style="border: 1px solid #ddd; padding: 8px; text-align: center;">22.00</td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top: 20px;">
+            <h3 style="color: #333;">Questions d'approfondissement pour les étudiants</h3>
+            <ol>
+                <li style="margin-bottom: 10px;">À l’aide du curseur, augmentez la taxe carbone à 0,30 $ par litre. Notez le nouveau prix effectif et la nouvelle quantité échangée à partir du tableau. En observant le graphique, expliquez pourquoi la quantité échangée diminue et comment l’intersection des courbes de demande et d’offre avec taxe s’est déplacée.</li>
+                <li style="margin-bottom: 10px;">Réglez la taxe carbone à 0,10 $ par litre et ajustez le prix maximal à 1,40 $ par litre. À l’aide du tableau, notez la quantité échangée et comparez-la à la quantité demandée à ce prix (estimée visuellement sur la courbe de demande dans le graphique). Expliquez pourquoi il y a une différence et discutez des conséquences pour les consommateurs (par exemple, pénurie).</li>
+                <li style="margin-bottom: 10px;">Réglez la taxe carbone à 0,10 $ par litre et le prix maximal à 1,30 $ par litre. Observez la ligne horizontale du prix maximal sur le graphique et notez la quantité échangée dans le tableau. À l’aide du graphique, estimez la quantité demandée à ce prix sur la courbe de demande. Pourquoi la quantité échangée est-elle inférieure à la quantité demandée, et quelles pourraient être les conséquences pour le marché de l’essence au Québec ?</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Configuration initiale
+        const ctx = document.getElementById('supplyDemandChart').getContext('2d');
+        const carbonTaxInput = document.getElementById('carbonTax');
+        const taxValueSpan = document.getElementById('taxValue');
+        const maxPriceInput = document.getElementById('maxPrice');
+        const maxPriceValueSpan = document.getElementById('maxPriceValue');
+        const tableTax = document.getElementById('tableTax');
+        const tableMaxPrice = document.getElementById('tableMaxPrice');
+        const tablePrice = document.getElementById('tablePrice');
+        const tableQuantity = document.getElementById('tableQuantity');
+
+        // Fonctions pour les courbes de demande et d'offre
+        // Demande : Qd = 45.4 - 15P (en millions de litres)
+        // Offre : Qs = 15.07(P - tax)
+        function getDemandCurve() {
+            const points = [];
+            for (let p = 0; p <= 3; p += 0.05) {
+                const q = Math.max(0, 45.4 - 15 * p);
+                points.push({ x: q, y: p });
+            }
+            return points;
+        }
+
+        function getSupplyCurve(tax) {
+            const points = [];
+            for (let p = 0; p <= 3; p += 0.05) {
+                const q = Math.max(0, 15.07 * (p - tax));
+                points.push({ x: q, y: p });
+            }
+            return points;
+        }
+
+        // Ligne horizontale pour le prix maximal
+        function getMaxPriceLine(maxPrice) {
+            return [
+                { x: 0, y: maxPrice },
+                { x: 50, y: maxPrice }
+            ];
+        }
+
+        // Trouver l'équilibre avec taxe et prix maximal
+        function getEquilibrium(tax, maxPrice) {
+            // Équilibre sans contrainte de prix maximal
+            // 45.4 - 15P = 15.07(P - tax)
+            // 45.4 + 15.07*tax = 30.07P
+            const pProducer = (45.4 + 15.07 * tax) / 30.07; // Prix perçu par les producteurs
+            const pEquilibrium = pProducer + tax; // Prix payé par les consommateurs sans plafond
+            let effectivePrice, quantity;
+
+            if (maxPrice < pEquilibrium) {
+                // Prix maximal contraignant
+                effectivePrice = maxPrice;
+                quantity = Math.max(0, 15.07 * (maxPrice - tax)); // Quantité offerte au prix maximal
+            } else {
+                // Prix maximal non contraignant
+                effectivePrice = pEquilibrium;
+                quantity = 45.4 - 15 * effectivePrice; // Quantité à l'équilibre
+            }
+
+            return { q: quantity, p: effectivePrice };
+        }
+
+        // Configuration du graphique
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [
+                    {
+                        label: 'Demande',
+                        data: getDemandCurve(),
+                        borderColor: 'blue',
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Offre (sans taxe)',
+                        data: getSupplyCurve(0),
+                        borderColor: 'green',
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Offre (avec taxe)',
+                        data: getSupplyCurve(0.10),
+                        borderColor: 'red',
+                        fill: false,
+                        pointRadius: 0
+                    },
+                    {
+                        label: 'Prix maximal',
+                        data: getMaxPriceLine(2),
+                        borderColor: 'purple',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Quantité (millions de litres)' },
+                        min: 0,
+                        max: 50
+                    },
+                    y: {
+                        title: { display: true, text: 'Prix ($/litre)' },
+                        min: 0,
+                        max: 3
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { enabled: false }
+                }
+            }
+        });
+
+        // Mettre à jour le graphique, le tableau et les textes
+        function updateChart() {
+            const tax = parseFloat(carbonTaxInput.value);
+            const maxPrice = parseFloat(maxPriceInput.value);
+            taxValueSpan.textContent = tax.toFixed(2);
+            maxPriceValueSpan.textContent = maxPrice.toFixed(2);
+
+            // Mettre à jour la courbe d'offre avec la taxe
+            chart.data.datasets[2].data = getSupplyCurve(tax);
+            chart.data.datasets[2].hidden = tax === 0;
+
+            // Mettre à jour la ligne du prix maximal
+            chart.data.datasets[3].data = getMaxPriceLine(maxPrice);
+
+            // Mettre à jour le tableau
+            const equilibrium = getEquilibrium(tax, maxPrice);
+            tableTax.textContent = tax.toFixed(2);
+            tableMaxPrice.textContent = maxPrice.toFixed(2);
+            tablePrice.textContent = equilibrium.p.toFixed(2);
+            tableQuantity.textContent = equilibrium.q.toFixed(2);
+
+            chart.update();
+        }
+
+        // Écouteurs pour les curseurs
+        carbonTaxInput.addEventListener('input', updateChart);
+        maxPriceInput.addEventListener('input', updateChart);
+
+        // Initialiser le graphique
+        updateChart();
+    </script>
+</body>
+</html>

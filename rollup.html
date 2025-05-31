@@ -4,44 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laboratoire SQL - Agrégations</title>
-    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.min.js"></script>
-    <style>
-        .solution {
-            display: none;
-            background-color: #e6f4ea;
-            padding: 12px;
-            border: 1px solid #15803d;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 14px;
-            color: #374151;
-            margin-bottom: 16px;
-        }
-        .solution-button {
-            background-color: #10b981;
-            color: #ffffff;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-            margin-top: 10px;
-        }
-    </style>
 </head>
 <body style="background-color: #f3f4f6; padding: 24px; font-family: Arial, sans-serif;">
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.min.js"></script>
     <div style="max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1f2937;">Laboratoire SQL - Exercices sur les agrégations</h1>
         <p style="margin-bottom: 16px; color: #4b5563;">
             Modifiez ou utilisez les requêtes SQL ci-dessous, puis cliquez sur "Exécuter" pour afficher les résultats. La base de données contient une table <code style="font-family: monospace;">ventes</code> (ville, produit, mois, ventes). SQLite ne supporte pas <code style="font-family: monospace;">WITH ROLLUP</code>, donc nous utilisons <code style="font-family: monospace;">UNION ALL</code> pour générer des sous-totaux et totaux dans les requêtes GROUP BY.
         </p>
-        <p style="margin-bottom: 16px; color: #4b5563;">En SQL, UNION ALL, GROUP BY et HAVING sont des clauses utilisées pour manipuler et agréger des données. UNION ALL combine les résultats de deux ou plusieurs requêtes SELECT en un seul ensemble de résultats, en conservant toutes les lignes, y compris les doublons, contrairement à UNION qui élimine les doublons. GROUP BY regroupe les lignes d'une table en fonction des valeurs d'une ou plusieurs colonnes, permettant d'appliquer des fonctions d'agrégation comme COUNT, SUM ou AVG sur chaque groupe. HAVING est utilisé avec GROUP BY pour filtrer les groupes en fonction d'une condition sur les valeurs agrégées, par exemple, sélectionner uniquement les groupes ayant un total supérieur à une certaine valeur. Ensemble, ces clauses permettent de fusionner des données, de les organiser en groupes et de filtrer les résultats agrégés pour répondre à des besoins analytiques spécifiques.  </p>
+        <p style="margin-bottom: 16px; color: #4b5563;">En SQL, UNION ALL, GROUP BY et HAVING sont des clauses utilisées pour manipuler et agréger des données. UNION ALL combine les résultats de deux ou plusieurs requêtes SELECT en un seul ensemble de résultats, en conservant toutes les lignes, y compris les doublons, contrairement à UNION qui élimine les doublons. GROUP BY regroupe les lignes d'une table en fonction des valeurs d'une ou plusieurs colonnes, permettant d'appliquer des fonctions d'agrégation comme COUNT, SUM ou AVG sur chaque groupe. HAVING est utilisé avec GROUP BY pour filtrer les groupes en fonction d'une condition sur les valeurs agrégées, par exemple, sélectionner uniquement les groupes ayant un total supérieur à une certaine valeur. Ensemble, ces clauses permettent de fusionner des données, de les organiser en groupes et de filtrer les résultats agrégés pour répondre à des besoins analytiques spécifiques.</p>
 
         <div style="margin-bottom: 24px;">
             <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Contenu de la Base de Données :</h2>
             <button class="show-table-button" data-table="ventes" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px; margin-right: 10px;">Afficher "ventes"</button>
-            <div id="tableContent" style="background-color: #e6f4ea; padding: 15px; border: 1px solid #15803d; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; font-size: 14px; color: #374151; display:none;"></div>
+            <div id="tableContent" style="background-color: #e6f4ea; padding: 15px; border: 1px solid #15803d; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; font-size: 14px; color: #374151; display: none;"></div>
         </div>
 
         <div style="background-color: #f9fafb; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 24px;">
@@ -70,8 +46,8 @@ FROM ventes;
         <div style="margin-bottom: 24px;">
             <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Exercices SQL sur les Agrégations :</h2>
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 1 : Affichez le total des ventes par ville et produit, avec les sous-totaux appropriés.</p>
-            <button class="solution-button" data-solution="solution1">Afficher la solution</button>
-            <pre id="solution1" class="solution">
+            <button data-solution="solution1" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution1" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, produit, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville, produit
@@ -85,8 +61,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 2 : Affichez le total des ventes par ville et mois, avec les sous-totaux appropriés.</p>
-            <button class="solution-button" data-solution="solution2">Afficher la solution</button>
-            <pre id="solution2" class="solution">
+            <button data-solution="solution2" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution2" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, mois, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville, mois
@@ -100,8 +76,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 3 : Affichez le total des ventes par produit et mois, avec les sous-totaux appropriés.</p>
-            <button class="solution-button" data-solution="solution3">Afficher la solution</button>
-            <pre id="solution3" class="solution">
+            <button data-solution="solution3" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution3" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT produit, mois, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY produit, mois
@@ -115,8 +91,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 4 : Affichez le total des ventes par ville, produit et mois, avec les sous-totaux appropriés.</p>
-            <button class="solution-button" data-solution="solution4">Afficher la solution</button>
-            <pre id="solution4" class="solution">
+            <button data-solution="solution4" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution4" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, produit, mois, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville, produit, mois
@@ -134,8 +110,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 5 : Affichez le total des ventes par ville avec les sous-totaux.</p>
-            <button class="solution-button" data-solution="solution5">Afficher la solution</button>
-            <pre id="solution5" class="solution">
+            <button data-solution="solution5" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution5" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville
@@ -145,8 +121,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 6 : Affichez le total des ventes par produit avec les sous-totaux.</p>
-            <button class="solution-button" data-solution="solution6">Afficher la solution</button>
-            <pre id="solution6" class="solution">
+            <button data-solution="solution6" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution6" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT produit, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY produit
@@ -156,8 +132,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 7 : Affichez le total des ventes par mois avec les sous-totaux.</p>
-            <button class="solution-button" data-solution="solution7">Afficher la solution</button>
-            <pre id="solution7" class="solution">
+            <button data-solution="solution7" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution7" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT mois, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY mois
@@ -167,8 +143,8 @@ FROM ventes;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 8 : Affichez le total des ventes par ville et produit avec les sous-totaux, triés par ville et produit.</p>
-            <button class="solution-button" data-solution="solution8">Afficher la solution</button>
-            <pre id="solution8" class="solution">
+            <button data-solution="solution8" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution8" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, produit, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville, produit
@@ -183,8 +159,8 @@ ORDER BY ville ASC, produit ASC;
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 9 : Affichez le total des ventes par produit et mois pour le mois de janvier, avec les sous-totaux.</p>
-            <button class="solution-button" data-solution="solution9">Afficher la solution</button>
-            <pre id="solution9" class="solution">
+            <button data-solution="solution9" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution9" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT produit, mois, SUM(ventes) AS total_ventes
 FROM ventes
 WHERE mois = 'Janvier'
@@ -201,8 +177,8 @@ WHERE mois = 'Janvier';
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 10 : Affichez le total des ventes par ville avec les sous-totaux, uniquement pour les villes où le total des ventes dépasse 1000.</p>
-            <button class="solution-button" data-solution="solution10">Afficher la solution</button>
-            <pre id="solution10" class="solution">
+            <button data-solution="solution10" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution10" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville
@@ -219,8 +195,8 @@ WHERE EXISTS (
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 11 : Affichez le total des ventes par produit et mois, uniquement pour les combinaisons produit-mois où les ventes dépassent 150, avec les sous-totaux appropriés.</p>
-            <button class="solution-button" data-solution="solution11">Afficher la solution</button>
-            <pre id="solution11" class="solution">
+            <button data-solution="solution11" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution11" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT produit, mois, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY produit, mois
@@ -242,8 +218,8 @@ WHERE EXISTS (
             </pre>
 
             <p style="margin-bottom: 8px; color: #4b5563;">Exercice 12 : Affichez le total des ventes par ville et produit, uniquement pour les combinaisons ville-produit où les ventes sont supérieures à 200, avec les sous-totaux.</p>
-            <button class="solution-button" data-solution="solution12">Afficher la solution</button>
-            <pre id="solution12" class="solution">
+            <button data-solution="solution12" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px;">Afficher la solution</button>
+            <pre id="solution12" style="display: none; background-color: #e6f4ea; padding: 12px; border: 1px solid #15803d; border-radius: 4px; font-family: monospace; font-size: 14px; color: #374151; margin-bottom: 16px;">
 SELECT ville, produit, SUM(ventes) AS total_ventes
 FROM ventes
 GROUP BY ville, produit
@@ -269,11 +245,10 @@ WHERE EXISTS (
     <script>
         let db;
 
-        // Fonction pour afficher une table donnée dans un élément HTML spécifié
         function displayTableContent(tableName, targetElementId) {
             const targetDiv = document.getElementById(targetElementId);
-            targetDiv.innerHTML = ''; // Clear previous content
-            targetDiv.style.display = 'block'; // Show the box
+            targetDiv.innerHTML = '';
+            targetDiv.style.display = 'block';
 
             try {
                 const results = db.exec(`SELECT * FROM ${tableName}`);
@@ -287,7 +262,6 @@ WHERE EXISTS (
                 table.style.width = '100%';
                 table.style.borderCollapse = 'collapse';
 
-                // En-tête du tableau
                 const thead = document.createElement('thead');
                 const trHead = document.createElement('tr');
                 results[0].columns.forEach(col => {
@@ -303,7 +277,6 @@ WHERE EXISTS (
                 thead.appendChild(trHead);
                 table.appendChild(thead);
 
-                // Corps du tableau
                 const tbody = document.createElement('tbody');
                 results[0].values.forEach(row => {
                     const tr = document.createElement('tr');
@@ -356,7 +329,6 @@ WHERE EXISTS (
                     ('Marseille', 'Tablette', 'Février', 35);
             `);
 
-            // Ajouter les écouteurs d'événements pour les boutons d'affichage de table
             document.querySelectorAll('.show-table-button').forEach(button => {
                 button.addEventListener('click', function() {
                     const tableName = this.dataset.table;
@@ -364,8 +336,7 @@ WHERE EXISTS (
                 });
             });
 
-            // Ajouter les écouteurs d'événements pour les boutons de solution
-            document.querySelectorAll('.solution-button').forEach(button => {
+            document.querySelectorAll('button[data-solution]').forEach(button => {
                 button.addEventListener('click', function() {
                     const solutionId = this.dataset.solution;
                     const solutionDiv = document.getElementById(solutionId);

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application d'Index Bitmap</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-3xl">
+    <h1 class="text-2xl font-bold mb-4 text-center">Générateur d'index bitmap</h1>
+    <p>Utilisez cette application pour générer un index bitmap simple.</p>
+    <!-- Formulaire pour saisir les données -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Ajouter une paire Item/Attribut</h2>
+      <div class="flex flex-col space-y-2">
+        <input id="item" type="text" placeholder="Item (ex: Livre 1)" class="border p-2 rounded">
+        <input id="attribute" type="text" placeholder="Attribut (ex: Science)" class="border p-2 rounded">
+        <button onclick="addData()" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Ajouter</button>
+      </div>
+    </div>
+
+    <!-- Affichage des données saisies -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Données saisies</h2>
+      <table id="dataTable" class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border p-2">Item</th>
+            <th class="border p-2">Attribut</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Bouton pour générer l'index bitmap -->
+    <div class="mb-6">
+      <button onclick="generateBitmap()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600 w-full">Générer l'Index Bitmap</button>
+    </div>
+
+    <!-- Affichage de l'index bitmap -->
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Index Bitmap</h2>
+      <div id="bitmapTable" class="overflow-x-auto"></div>
+    </div>
+  </div>
+
+  <script>
+    // Stockage des données
+    let data = [];
+
+    // Ajouter une paire Item/Attribut
+    function addData() {
+      const item = document.getElementById('item').value.trim();
+      const attribute = document.getElementById('attribute').value.trim();
+
+      if (item && attribute) {
+        data.push({ item, attribute });
+        updateDataTable();
+        clearInputs();
+      } else {
+        alert('Veuillez remplir tous les champs.');
+      }
+    }
+
+    // Mettre à jour le tableau des données
+    function updateDataTable() {
+      const tbody = document.getElementById('dataBody');
+      tbody.innerHTML = '';
+      data.forEach(d => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border p-2">${d.item}</td>
+          <td class="border p-2">${d.attribute}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Vider les champs du formulaire
+    function clearInputs() {
+      document.getElementById('item').value = '';
+      document.getElementById('attribute').value = '';
+    }
+
+    // Générer l'index bitmap
+    function generateBitmap() {
+      // Extraire les items et attributs uniques
+      const items = [...new Set(data.map(d => d.item))];
+      const attributes = [...new Set(data.map(d => d.attribute))];
+
+      // Créer la matrice bitmap
+      const bitmap = items.map(item => {
+        return attributes.map(attribute => {
+          return data.some(d => d.item === item && d.attribute === attribute) ? 1 : 0;
+        });
+      });
+
+      // Afficher le bitmap
+      displayBitmap(items, attributes, bitmap);
+    }
+
+    // Afficher le bitmap sous forme de tableau
+    function displayBitmap(items, attributes, bitmap) {
+      const bitmapTable = document.getElementById('bitmapTable');
+      bitmapTable.innerHTML = '';
+
+      if (items.length === 0 || attributes.length === 0) {
+        bitmapTable.innerHTML = '<p>Aucune donnée pour générer l\'index bitmap.</p>';
+        return;
+      }
+
+      const table = document.createElement('table');
+      table.className = 'w-full border-collapse';
+
+      // En-tête
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      headerRow.className = 'bg-gray-200';
+      headerRow.innerHTML = '<th class="border p-2">Item</th>';
+      attributes.forEach(attr => {
+        headerRow.innerHTML += `<th class="border p-2">${attr}</th>`;
+      });
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+
+      // Corps
+      const tbody = document.createElement('tbody');
+      items.forEach((item, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td class="border p-2">${item}</td>`;
+        bitmap[i].forEach(value => {
+          row.innerHTML += `<td class="border p-2 text-center">${value}</td>`;
+        });
+        tbody.appendChild(row);
+      });
+      table.appendChild(tbody);
+
+      bitmapTable.appendChild(table);
+    }
+  </script>
+</body>
+</html>

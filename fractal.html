@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimation Statistique Multifractale (Faloutsos et al., 1996)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; max-width: 800px;">
+    <h1 style="font-size: 24px;">Estimation Statistique Multifractale</h1>
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 18px;">Entrer les fréquences observées</h3>
+        <input id="inputFrequencies" type="text" placeholder="Entrez les 3 plus hautes fréquences (ex: 500,300,200)" style="padding: 8px; width: 300px; margin-right: 10px;">
+        <input id="totalElements" type="text" placeholder="Nombre total d'éléments (ex: 1000)" style="padding: 8px; width: 200px; margin-right: 10px;">
+        <button onclick="estimateDistribution()" style="padding: 8px 16px; cursor: pointer;">Estimer</button>
+        <p style="margin-top: 10px;">Paramètre p estimé : <span id="pResult" style="font-weight: bold;">-</span></p>
+        <p style="margin-top: 10px;">Nombre d'éléments distincts estimé : <span id="distinctResult" style="font-weight: bold;">-</span></p>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 18px;">Distribution des fréquences</h3>
+        <canvas id="freqChart" style="width: 100%; max-height: 400px;"></canvas>
+    </div>
+    <div>
+        <h3 style="font-size: 18px;">À propos de l'approche (Faloutsos et al., 1996)</h3>
+        <p style="line-height: 1.5;">L'article de Faloutsos, Matias et Silberschatz (1996) propose une méthode pour modéliser des distributions biaisées dans les bases de données en utilisant des multifractales et la loi 80-20. Une distribution multifractale divise les probabilités en deux groupes avec des proportions p et 1-p, et répète ce processus itérativement. Le paramètre p (biais) est estimé à partir des premières fréquences ou moments. Cette application simplifie l'approche en estimant p à partir de la première fréquence observée et génère la distribution attendue.</p>
+        <p style="line-height: 1.5;"><b>Exemple :</b><br>
+            - Entrée : Fréquences [500, 300, 200], total 1000 éléments.<br>
+            - Estimation : p ≈ (500/1000)^(1/6) ≈ 0.891.<br>
+            - Résultat : Distribution multifractale avec 64 valeurs, fréquences estimées, et nombre d'éléments distincts.</p>
+    </div>
+
+    <script>
+        // Initialiser le graphique
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('freqChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [
+                        { label: 'Fréquences Observées', data: [], backgroundColor: 'rgba(75, 192, 192, 0.5)' },
+                        { label: 'Fréquences Estimées', data: [], backgroundColor: 'rgba(255, 99, 132, 0.5)' }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Fréquence' } },
+                        x: { title: { display: true, text: 'Valeur' } }
+                    }
+                }
+            });
+        }
+
+        // Générer la distribution multifractale
+        function generateMultifractal(p, k = 6) {
+            const nValues = Math.pow(2, k);
+            const frequencies = new Array(nValues).fill(0);
+            function recursiveSplit(prob, level, index) {
+                if (level === k) {
+                    frequencies[index] = prob;
+                    return;
+                }
+                recursiveSplit(prob * p, level + 1, index * 2);
+                recursiveSplit(prob * (1 - p), level + 1, index * 2 + 1);
+            }
+            recursiveSplit(1, 0, 0);
+            return frequencies;
+        }
+
+        // Estimer la distribution
+        function estimateDistribution() {
+            const inputFreq = document.getElementById('inputFrequencies').value.trim();
+            const totalElements = parseInt(document.getElementById('totalElements').value.trim());
+            if (!inputFreq || isNaN(totalElements) || totalElements <= 0) {
+                document.getElementById('pResult').textContent = 'Erreur : Entrez des fréquences et un total valides';
+                document.getElementById('distinctResult').textContent = '-';
+                chart.data.labels = [];
+                chart.data.datasets[0].data = [];
+                chart.data.datasets[1].data = [];
+                chart.update();
+                return;
+            }
+
+            // Parser les fréquences
+            const frequencies = inputFreq.split(',').map(f => parseInt(f.trim())).filter(f => !isNaN(f));
+            if (frequencies.length < 1) {
+                document.getElementById('pResult').textContent = 'Erreur : Entrez au moins une fréquence';
+                document.getElementById('distinctResult').textContent = '-';
+                chart.data.labels = [];
+                chart.data.datasets[0].data = [];
+                chart.data.datasets[1].data = [];
+                chart.update();
+                return;
+            }
+
+            // Estimer p (simplifié : p^k ≈ f_1 / N)
+            const k = 6; // Ordre de la distribution
+            const f1 = frequencies[0];
+            const p = Math.pow(f1 / totalElements, 1 / k);
+
+            // Générer la distribution multifractale
+            const estimatedFreq = generateMultifractal(p, k).map(f => f * totalElements);
+            estimatedFreq.sort((a, b) => b - a); // Trier par ordre décroissant
+
+            // Estimer le nombre d'éléments distincts (simplifié : nombre de fréquences non nulles)
+            const distinctCount = estimatedFreq.filter(f => f > 0.1).length; // Seuil pour éviter les fréquences trop faibles
+
+            // Afficher les résultats
+            document.getElementById('pResult').textContent = p.toFixed(3);
+            document.getElementById('distinctResult').textContent = distinctCount;
+
+            // Mettre à jour le graphique
+            const labels = Array.from({ length: Math.max(frequencies.length, 10) }, (_, i) => `Valeur ${i + 1}`);
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = frequencies.concat(new Array(labels.length - frequencies.length).fill(0));
+            chart.data.datasets[1].data = estimatedFreq.slice(0, labels.length);
+            chart.update();
+        }
+
+        // Initialiser
+        window.onload = initChart;
+    </script>
+</body>
+</html>

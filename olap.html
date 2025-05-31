@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application OLAP - Roll-up, Drill-down, Slice, Dice, Pivot</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px;">
+    <h1>Application OLAP - Analyse des Ventes</h1>
+    <div>
+        <button onclick="rollUp()" style="margin: 5px; padding: 10px;">Roll-up (par Année)</button>
+        <button onclick="drillDown()" style="margin: 5px; padding: 10px;">Drill-down (par Trimestre)</button>
+        <button onclick="slice()" style="margin: 5px; padding: 10px;">Slice (Année 2023)</button>
+        <button onclick="dice()" style="margin: 5px; padding: 10px;">Dice (2023, Produit A & B)</button>
+        <button onclick="pivot()" style="margin: 5px; padding: 10px;">Pivot (Région vs Produit)</button>
+        <button onclick="reset()" style="margin: 5px; padding: 10px;">Réinitialiser</button>
+        <button onclick="showRawData()" style="margin: 5px; padding: 10px;">Afficher données originales</button>
+        <select id="regionFilter" onchange="updateChart()" style="padding: 5px;">
+            <option value="all">Toutes Régions</option>
+            <option value="Nord">Nord</option>
+            <option value="Sud">Sud</option>
+            <option value="Est">Est</option>
+            <option value="Ouest">Ouest</option>
+        </select>
+    </div>
+    <div id="chartContainer" style="width: 800px; height: 400px;">
+        <canvas id="salesChart"></canvas>
+    </div>
+    <div id="dataTableContainer" style="display: none;">
+        <h3>Données Originales</h3>
+        <table id="dataTable" style="margin-top: 20px; border-collapse: collapse; width: 800px;">
+            <thead>
+                <tr>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Année</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Trimestre</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Produit</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Région</th>
+                    <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Ventes</th>
+                </tr>
+            </thead>
+            <tbody id="dataTableBody"></tbody>
+        </table>
+    </div>
+    <div id="description">
+        <h3>Concepts OLAP Illustrés :</h3>
+        <p><b>Roll-up</b> : Agrège les données à un niveau supérieur (par année au lieu de trimestre).</p>
+        <p><b>Drill-down</b> : Décompose les données à un niveau plus détaillé (par trimestre).</p>
+        <p><b>Slice</b> : Sélectionne une dimension spécifique (année 2023 uniquement).</p>
+        <p><b>Dice</b> : Extrait un sous-ensemble de données (année 2023, produits A et B).</p>
+        <p><b>Pivot</b> : Réorganise les dimensions (affiche les ventes par région au lieu de produit).</p>
+    </div>
+
+    <script>
+        // Données initiales (ventes par produit, région, année, trimestre)
+        const rawData = [
+            { year: 2022, quarter: 'Q1', product: 'A', region: 'Nord', sales: 100 },
+            { year: 2022, quarter: 'Q1', product: 'A', region: 'Sud', sales: 120 },
+            { year: 2022, quarter: 'Q1', product: 'B', region: 'Nord', sales: 80 },
+            { year: 2022, quarter: 'Q2', product: 'A', region: 'Est', sales: 110 },
+            { year: 2023, quarter: 'Q1', product: 'A', region: 'Nord', sales: 130 },
+            { year: 2023, quarter: 'Q1', product: 'B', region: 'Sud', sales: 90 },
+            { year: 2023, quarter: 'Q2', product: 'C', region: 'Ouest', sales: 150 },
+            { year: 2022, quarter: 'Q3', product: 'B', region: 'Ouest', sales: 95 },
+            { year: 2022, quarter: 'Q4', product: 'C', region: 'Nord', sales: 140 },
+            { year: 2023, quarter: 'Q3', product: 'A', region: 'Est', sales: 125 },
+            { year: 2023, quarter: 'Q4', product: 'B', region: 'Sud', sales: 105 },
+        ];
+
+        let currentData = [...rawData];
+        let groupBy = 'product';
+        let chart;
+
+        // Initialisation du graphique
+        function initChart() {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'Ventes' } } } }
+            });
+            updateChart();
+        }
+
+        // Mise à jour du graphique
+        function updateChart() {
+            const regionFilter = document.getElementById('regionFilter').value;
+            let filteredData = regionFilter === 'all' ? currentData : currentData.filter(d => d.region === regionFilter);
+
+            // Agrégation des données
+            const aggregated = filteredData.reduce((acc, curr) => {
+                const key = curr[groupBy];
+                acc[key] = (acc[key] || 0) + curr.sales;
+                return acc;
+            }, {});
+
+            // Mise à jour des labels et données
+            chart.data.labels = Object.keys(aggregated);
+            chart.data.datasets = [{
+                label: 'Ventes',
+                data: Object.values(aggregated),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }];
+            chart.options.scales.x = { title: { display: true, text: groupBy.charAt(0).toUpperCase() + groupBy.slice(1) } };
+            chart.update();
+        }
+
+        // Afficher les données originales dans un tableau
+        function showRawData() {
+            const tableBody = document.getElementById('dataTableBody');
+            tableBody.innerHTML = ''; // Vider le tableau
+            rawData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${row.year}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${row.quarter}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${row.product}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${row.region}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px; text-align: left;">${row.sales}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            document.getElementById('dataTableContainer').style.display = 'block';
+        }
+
+        // Roll-up : Agrégation par année
+        function rollUp() {
+            currentData = rawData.reduce((acc, curr) => {
+                const key = curr.year;
+                const existing = acc.find(d => d.year === key);
+                if (existing) {
+                    existing.sales += curr.sales;
+                } else {
+                    acc.push({ year: key, sales: curr.sales });
+                }
+                return acc;
+            }, []);
+            groupBy = 'year';
+            updateChart();
+        }
+
+        // Drill-down : Détailler par trimestre
+        function drillDown() {
+            currentData = [...rawData];
+            groupBy = 'quarter';
+            updateChart();
+        }
+
+        // Slice : Sélectionner l'année 2023
+        function slice() {
+            currentData = rawData.filter(d => d.year === 2023);
+            groupBy = 'product';
+            updateChart();
+        }
+
+        // Dice : Extraire 2023, produits A et B
+        function dice() {
+            currentData = rawData.filter(d => d.year === 2023 && ['A', 'B'].includes(d.product));
+            groupBy = 'product';
+            updateChart();
+        }
+
+        // Pivot : Changer pour afficher par région
+        function pivot() {
+            groupBy = 'region';
+            updateChart();
+        }
+
+        // Réinitialiser
+        function reset() {
+            currentData = [...rawData];
+            groupBy = 'product';
+            document.getElementById('regionFilter').value = 'all';
+            document.getElementById('dataTableContainer').style.display = 'none';
+            updateChart();
+        }
+
+        // Initialiser
+        window.onload = initChart;
+    </script>
+</body>
+</html>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboratoire SQL - Agrégations</title>
+    <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.min.js"></script>
+    <style>
+        .solution {
+            display: none;
+            background-color: #e6f4ea;
+            padding: 12px;
+            border: 1px solid #15803d;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        .solution-button {
+            background-color: #10b981;
+            color: #ffffff;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body style="background-color: #f3f4f6; padding: 24px; font-family: Arial, sans-serif;">
+    <div style="max-width: 1000px; margin: 0 auto; background-color: #ffffff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <h1 style="font-size: 24px; font-weight: bold; margin-bottom: 16px; color: #1f2937;">Laboratoire SQL - Exercices sur les agrégations</h1>
+        <p style="margin-bottom: 16px; color: #4b5563;">
+            Modifiez ou utilisez les requêtes SQL ci-dessous, puis cliquez sur "Exécuter" pour afficher les résultats. La base de données contient une table <code style="font-family: monospace;">ventes</code> (ville, produit, mois, ventes). SQLite ne supporte pas <code style="font-family: monospace;">WITH ROLLUP</code>, donc nous utilisons <code style="font-family: monospace;">UNION ALL</code> pour générer des sous-totaux et totaux dans les requêtes GROUP BY.
+        </p>
+        <p style="margin-bottom: 16px; color: #4b5563;">En SQL, UNION ALL, GROUP BY et HAVING sont des clauses utilisées pour manipuler et agréger des données. UNION ALL combine les résultats de deux ou plusieurs requêtes SELECT en un seul ensemble de résultats, en conservant toutes les lignes, y compris les doublons, contrairement à UNION qui élimine les doublons. GROUP BY regroupe les lignes d'une table en fonction des valeurs d'une ou plusieurs colonnes, permettant d'appliquer des fonctions d'agrégation comme COUNT, SUM ou AVG sur chaque groupe. HAVING est utilisé avec GROUP BY pour filtrer les groupes en fonction d'une condition sur les valeurs agrégées, par exemple, sélectionner uniquement les groupes ayant un total supérieur à une certaine valeur. Ensemble, ces clauses permettent de fusionner des données, de les organiser en groupes et de filtrer les résultats agrégés pour répondre à des besoins analytiques spécifiques.  </p>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Contenu de la Base de Données :</h2>
+            <button class="show-table-button" data-table="ventes" style="background-color: #10b981; color: #ffffff; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.2s; margin-top: 10px; margin-right: 10px;">Afficher "ventes"</button>
+            <div id="tableContent" style="background-color: #e6f4ea; padding: 15px; border: 1px solid #15803d; border-radius: 8px; margin-top: 15px; max-height: 300px; overflow-y: auto; font-size: 14px; color: #374151; display:none;"></div>
+        </div>
+
+        <div style="background-color: #f9fafb; padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 24px;">
+            <p style="font-size: 16px; font-weight: bold; color: #374151; margin-bottom: 8px;">Requête SQL :</p>
+            <textarea id="sqlInput" rows="10" cols="45" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 16px;">
+SELECT ville, produit, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, produit
+UNION ALL
+SELECT ville, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes;
+            </textarea>
+
+            <button id="runButton" style="width: 100%; background-color: #2563eb; color: #ffffff; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.2s; margin-bottom: 16px;">
+                Exécuter
+            </button>
+
+            <div id="error" style="margin-bottom: 16px; color: #dc2626; font-size: 14px;"></div>
+            <div id="result" style="padding: 12px; border: 1px solid #d1d5db; border-radius: 4px;"></div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+            <h2 style="font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 8px;">Exercices SQL sur les Agrégations :</h2>
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 1 : Affichez le total des ventes par ville et produit, avec les sous-totaux appropriés.</p>
+            <button class="solution-button" data-solution="solution1">Afficher la solution</button>
+            <pre id="solution1" class="solution">
+SELECT ville, produit, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, produit
+UNION ALL
+SELECT ville, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 2 : Affichez le total des ventes par ville et mois, avec les sous-totaux appropriés.</p>
+            <button class="solution-button" data-solution="solution2">Afficher la solution</button>
+            <pre id="solution2" class="solution">
+SELECT ville, mois, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, mois
+UNION ALL
+SELECT ville, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 3 : Affichez le total des ventes par produit et mois, avec les sous-totaux appropriés.</p>
+            <button class="solution-button" data-solution="solution3">Afficher la solution</button>
+            <pre id="solution3" class="solution">
+SELECT produit, mois, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY produit, mois
+UNION ALL
+SELECT produit, NULL, SUM(ventes)
+FROM ventes
+GROUP BY produit
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 4 : Affichez le total des ventes par ville, produit et mois, avec les sous-totaux appropriés.</p>
+            <button class="solution-button" data-solution="solution4">Afficher la solution</button>
+            <pre id="solution4" class="solution">
+SELECT ville, produit, mois, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, produit, mois
+UNION ALL
+SELECT ville, produit, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville, produit
+UNION ALL
+SELECT ville, NULL, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, NULL, NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 5 : Affichez le total des ventes par ville avec les sous-totaux.</p>
+            <button class="solution-button" data-solution="solution5">Afficher la solution</button>
+            <pre id="solution5" class="solution">
+SELECT ville, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 6 : Affichez le total des ventes par produit avec les sous-totaux.</p>
+            <button class="solution-button" data-solution="solution6">Afficher la solution</button>
+            <pre id="solution6" class="solution">
+SELECT produit, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY produit
+UNION ALL
+SELECT NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 7 : Affichez le total des ventes par mois avec les sous-totaux.</p>
+            <button class="solution-button" data-solution="solution7">Afficher la solution</button>
+            <pre id="solution7" class="solution">
+SELECT mois, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY mois
+UNION ALL
+SELECT NULL, SUM(ventes)
+FROM ventes;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 8 : Affichez le total des ventes par ville et produit avec les sous-totaux, triés par ville et produit.</p>
+            <button class="solution-button" data-solution="solution8">Afficher la solution</button>
+            <pre id="solution8" class="solution">
+SELECT ville, produit, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, produit
+UNION ALL
+SELECT ville, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes
+ORDER BY ville ASC, produit ASC;
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 9 : Affichez le total des ventes par produit et mois pour le mois de janvier, avec les sous-totaux.</p>
+            <button class="solution-button" data-solution="solution9">Afficher la solution</button>
+            <pre id="solution9" class="solution">
+SELECT produit, mois, SUM(ventes) AS total_ventes
+FROM ventes
+WHERE mois = 'Janvier'
+GROUP BY produit, mois
+UNION ALL
+SELECT produit, NULL, SUM(ventes)
+FROM ventes
+WHERE mois = 'Janvier'
+GROUP BY produit
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes
+WHERE mois = 'Janvier';
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 10 : Affichez le total des ventes par ville avec les sous-totaux, uniquement pour les villes où le total des ventes dépasse 1000.</p>
+            <button class="solution-button" data-solution="solution10">Afficher la solution</button>
+            <pre id="solution10" class="solution">
+SELECT ville, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville
+HAVING SUM(ventes) > 1000
+UNION ALL
+SELECT NULL, SUM(ventes)
+FROM ventes
+WHERE EXISTS (
+    SELECT 1
+    FROM ventes v2
+    GROUP BY ville
+    HAVING SUM(v2.ventes) > 1000
+);
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 11 : Affichez le total des ventes par produit et mois, uniquement pour les combinaisons produit-mois où les ventes dépassent 150, avec les sous-totaux appropriés.</p>
+            <button class="solution-button" data-solution="solution11">Afficher la solution</button>
+            <pre id="solution11" class="solution">
+SELECT produit, mois, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY produit, mois
+HAVING SUM(ventes) > 150
+UNION ALL
+SELECT produit, NULL, SUM(ventes)
+FROM ventes
+GROUP BY produit
+HAVING SUM(ventes) > 150
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes
+WHERE EXISTS (
+    SELECT 1
+    FROM ventes v2
+    GROUP BY produit, mois
+    HAVING SUM(v2.ventes) > 150
+);
+            </pre>
+
+            <p style="margin-bottom: 8px; color: #4b5563;">Exercice 12 : Affichez le total des ventes par ville et produit, uniquement pour les combinaisons ville-produit où les ventes sont supérieures à 200, avec les sous-totaux.</p>
+            <button class="solution-button" data-solution="solution12">Afficher la solution</button>
+            <pre id="solution12" class="solution">
+SELECT ville, produit, SUM(ventes) AS total_ventes
+FROM ventes
+GROUP BY ville, produit
+HAVING SUM(ventes) > 200
+UNION ALL
+SELECT ville, NULL, SUM(ventes)
+FROM ventes
+GROUP BY ville
+HAVING SUM(ventes) > 200
+UNION ALL
+SELECT NULL, NULL, SUM(ventes)
+FROM ventes
+WHERE EXISTS (
+    SELECT 1
+    FROM ventes v2
+    GROUP BY ville, produit
+    HAVING SUM(v2.ventes) > 200
+);
+            </pre>
+        </div>
+    </div>
+
+    <script>
+        let db;
+
+        // Fonction pour afficher une table donnée dans un élément HTML spécifié
+        function displayTableContent(tableName, targetElementId) {
+            const targetDiv = document.getElementById(targetElementId);
+            targetDiv.innerHTML = ''; // Clear previous content
+            targetDiv.style.display = 'block'; // Show the box
+
+            try {
+                const results = db.exec(`SELECT * FROM ${tableName}`);
+
+                if (results.length === 0 || !results[0].values || results[0].values.length === 0) {
+                    targetDiv.textContent = `La table "${tableName}" est vide ou n'existe pas.`;
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.style.width = '100%';
+                table.style.borderCollapse = 'collapse';
+
+                // En-tête du tableau
+                const thead = document.createElement('thead');
+                const trHead = document.createElement('tr');
+                results[0].columns.forEach(col => {
+                    const th = document.createElement('th');
+                    th.textContent = col;
+                    th.style.padding = '8px';
+                    th.style.border = '1px solid #a7f3d0';
+                    th.style.textAlign = 'left';
+                    th.style.backgroundColor = '#6ee7b7';
+                    th.style.fontWeight = 'bold';
+                    trHead.appendChild(th);
+                });
+                thead.appendChild(trHead);
+                table.appendChild(thead);
+
+                // Corps du tableau
+                const tbody = document.createElement('tbody');
+                results[0].values.forEach(row => {
+                    const tr = document.createElement('tr');
+                    row.forEach(cell => {
+                        const td = document.createElement('td');
+                        td.textContent = cell;
+                        td.style.padding = '8px';
+                        td.style.border = '1px solid #a7f3d0';
+                        td.style.textAlign = 'left';
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+                table.appendChild(tbody);
+
+                targetDiv.appendChild(table);
+            } catch (e) {
+                targetDiv.textContent = `Erreur lors de l'affichage de la table "${tableName}" : ${e.message}`;
+            }
+        }
+
+        initSqlJs({ locateFile: () => 'https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.wasm' }).then(function(SQL) {
+            db = new SQL.Database();
+
+            db.run(`
+                CREATE TABLE ventes (
+                    ville TEXT,
+                    produit TEXT,
+                    mois TEXT,
+                    ventes INTEGER
+                );
+                INSERT INTO ventes (ville, produit, mois, ventes) VALUES
+                    ('Paris', 'Laptop', 'Janvier', 150),
+                    ('Paris', 'Laptop', 'Février', 120),
+                    ('Paris', 'Smartphone', 'Janvier', 200),
+                    ('Paris', 'Smartphone', 'Février', 180),
+                    ('Lyon', 'Laptop', 'Janvier', 100),
+                    ('Lyon', 'Laptop', 'Février', 90),
+                    ('Lyon', 'Smartphone', 'Janvier', 150),
+                    ('Lyon', 'Smartphone', 'Février', 130),
+                    ('Marseille', 'Laptop', 'Janvier', 80),
+                    ('Marseille', 'Laptop', 'Février', 70),
+                    ('Marseille', 'Smartphone', 'Janvier', 120),
+                    ('Marseille', 'Smartphone', 'Février', 110),
+                    ('Paris', 'Tablette', 'Janvier', 50),
+                    ('Paris', 'Tablette', 'Février', 60),
+                    ('Lyon', 'Tablette', 'Janvier', 40),
+                    ('Lyon', 'Tablette', 'Février', 45),
+                    ('Marseille', 'Tablette', 'Janvier', 30),
+                    ('Marseille', 'Tablette', 'Février', 35);
+            `);
+
+            // Ajouter les écouteurs d'événements pour les boutons d'affichage de table
+            document.querySelectorAll('.show-table-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const tableName = this.dataset.table;
+                    displayTableContent(tableName, 'tableContent');
+                });
+            });
+
+            // Ajouter les écouteurs d'événements pour les boutons de solution
+            document.querySelectorAll('.solution-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const solutionId = this.dataset.solution;
+                    const solutionDiv = document.getElementById(solutionId);
+                    solutionDiv.style.display = solutionDiv.style.display === 'none' ? 'block' : 'none';
+                    this.textContent = solutionDiv.style.display === 'none' ? 'Afficher la solution' : 'Masquer la solution';
+                });
+            });
+
+            document.getElementById('runButton').addEventListener('click', function() {
+                const sqlInput = document.getElementById('sqlInput').value.trim();
+                const errorDiv = document.getElementById('error');
+                const resultDiv = document.getElementById('result');
+
+                errorDiv.textContent = '';
+                resultDiv.innerHTML = '';
+
+                if (!sqlInput) {
+                    errorDiv.textContent = 'Erreur : Veuillez entrer une requête SQL.';
+                    return;
+                }
+
+                try {
+                    const results = db.exec(sqlInput);
+
+                    if (results.length === 0 || !results[0].values || results[0].values.length === 0) {
+                        if (sqlInput.toUpperCase().startsWith('SELECT')) {
+                            resultDiv.textContent = 'Aucun résultat retourné par la requête SELECT.';
+                        } else {
+                            resultDiv.textContent = 'Requête exécutée avec succès (aucune donnée à afficher).';
+                        }
+                        return;
+                    }
+
+                    const table = document.createElement('table');
+                    table.style.width = '100%';
+                    table.style.borderCollapse = 'collapse';
+                    table.style.fontSize = '14px';
+                    table.style.color = '#374151';
+
+                    const thead = document.createElement('thead');
+                    const trHead = document.createElement('tr');
+                    results[0].columns.forEach(col => {
+                        const th = document.createElement('th');
+                        th.textContent = col;
+                        th.style.padding = '8px';
+                        th.style.border = '1px solid #e5e7eb';
+                        th.style.backgroundColor = '#e6f4ea';
+                        th.style.fontWeight = 'bold';
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    results[0].values.forEach(row => {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell;
+                            td.style.padding = '8px';
+                            td.style.border = '1px solid #e5e7eb';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+
+                    resultDiv.appendChild(table);
+                } catch (e) {
+                    errorDiv.textContent = `Erreur : Requête SQL invalide - ${e.message}`;
+                }
+            });
+        }).catch(e => {
+            document.getElementById('error').textContent = `Erreur : Impossible de charger SQL.js - ${e.message}`;
+        });
+    </script>
+</body>
+</html>

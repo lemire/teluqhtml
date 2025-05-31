@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application de Filtrage Collaboratif Slope One</title>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-4">
+      <script src="https://cdn.tailwindcss.com"></script>
+
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl">
+    <h1 class="text-2xl font-bold mb-4 text-center">Filtrage Collaboratif Slope One</h1>
+    
+    <!-- Formulaire pour saisir les notes -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Ajouter une note</h2>
+      <div class="flex flex-col space-y-2">
+        <input id="user" type="text" placeholder="Nom de l'étudiant" class="border p-2 rounded">
+        <input id="item" type="text" placeholder="Nom de l'article (ex: Livre 1)" class="border p-2 rounded">
+        <input id="rating" type="number" min="1" max="5" placeholder="Note (1-5)" class="border p-2 rounded">
+        <button onclick="addRating()" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Ajouter</button>
+      </div>
+    </div>
+
+    <!-- Affichage des notes saisies -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Notes saisies</h2>
+      <table id="ratingsTable" class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border p-2">Étudiant</th>
+            <th class="border p-2">Article</th>
+            <th class="border p-2">Note</th>
+          </tr>
+        </thead>
+        <tbody id="ratingsBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Formulaire pour obtenir des recommandations -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Obtenir des recommandations</h2>
+      <div class="flex space-x-2">
+        <input id="recommendUser" type="text" placeholder="Nom de l'étudiant" class="border p-2 rounded">
+        <button onclick="getRecommendations()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">Recommander</button>
+      </div>
+    </div>
+
+    <!-- Affichage des recommandations -->
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Recommandations</h2>
+      <ul id="recommendations" class="list-disc pl-5"></ul>
+    </div>
+  </div>
+
+  <script>
+    // Stockage des notes
+    let ratings = [];
+
+    // Ajouter une note
+    function addRating() {
+      const user = document.getElementById('user').value.trim();
+      const item = document.getElementById('item').value.trim();
+      const rating = parseInt(document.getElementById('rating').value);
+
+      if (user && item && rating >= 1 && rating <= 5) {
+        ratings.push({ user, item, rating });
+        updateRatingsTable();
+        clearInputs();
+      } else {
+        alert('Veuillez remplir tous les champs correctement (Note entre 1 et 5).');
+      }
+    }
+
+    // Mettre à jour le tableau des notes
+    function updateRatingsTable() {
+      const tbody = document.getElementById('ratingsBody');
+      tbody.innerHTML = '';
+      ratings.forEach(r => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border p-2">${r.user}</td>
+          <td class="border p-2">${r.item}</td>
+          <td class="border p-2">${r.rating}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Vider les champs du formulaire
+    function clearInputs() {
+      document.getElementById('user').value = '';
+      document.getElementById('item').value = '';
+      document.getElementById('rating').value = '';
+    }
+
+    // Algorithme Slope One
+    function slopeOneRecommendations(user) {
+      // Étape 1 : Calculer les écarts (deviations) entre items
+      const items = [...new Set(ratings.map(r => r.item))];
+      const deviations = {};
+      const frequencies = {};
+
+      // Initialiser les matrices
+      items.forEach(item1 => {
+        deviations[item1] = {};
+        frequencies[item1] = {};
+        items.forEach(item2 => {
+          deviations[item1][item2] = 0;
+          frequencies[item1][item2] = 0;
+        });
+      });
+
+      // Calculer les écarts
+      ratings.forEach(r1 => {
+        ratings.forEach(r2 => {
+          if (r1.user === r2.user && r1.item !== r2.item) {
+            deviations[r1.item][r2.item] += r1.rating - r2.rating;
+            frequencies[r1.item][r2.item]++;
+          }
+        });
+      });
+
+      // Normaliser les écarts
+      items.forEach(item1 => {
+        items.forEach(item2 => {
+          if (frequencies[item1][item2] > 0) {
+            deviations[item1][item2] /= frequencies[item1][item2];
+          }
+        });
+      });
+
+      // Étape 2 : Prédire les notes pour l'utilisateur
+      const userRatings = ratings.filter(r => r.user === user);
+      const ratedItems = userRatings.map(r => r.item);
+      const predictions = [];
+
+      items.forEach(targetItem => {
+        if (!ratedItems.includes(targetItem)) {
+          let total = 0;
+          let count = 0;
+          userRatings.forEach(ur => {
+            const freq = frequencies[targetItem][ur.item];
+            if (freq > 0) {
+              total += (ur.rating + deviations[targetItem][ur.item]) * freq;
+              count += freq;
+            }
+          });
+          if (count > 0) {
+            predictions.push({ item: targetItem, score: total / count });
+          }
+        }
+      });
+
+      // Trier par score décroissant
+      return predictions.sort((a, b) => b.score - a.score);
+    }
+
+    // Obtenir et afficher les recommandations
+    function getRecommendations() {
+      const user = document.getElementById('recommendUser').value.trim();
+      const recommendationsList = document.getElementById('recommendations');
+      recommendationsList.innerHTML = '';
+
+      if (!user) {
+        alert('Veuillez entrer un nom d\'étudiant.');
+        return;
+      }
+
+      const recommendations = slopeOneRecommendations(user);
+      if (recommendations.length === 0) {
+        recommendationsList.innerHTML = '<li>Aucune recommandation disponible.</li>';
+      } else {
+        recommendations.forEach(r => {
+          const li = document.createElement('li');
+          li.textContent = `${r.item}: Score prédit ${r.score.toFixed(2)}`;
+          recommendationsList.appendChild(li);
+        });
+      }
+    }
+  </script>
+</body>
+</html>

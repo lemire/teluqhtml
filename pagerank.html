@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Illustration de PageRank</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f0f0f0; display: flex; flex-direction: column; align-items: center;">
+    <h1 style="color: #333; margin-bottom: 10px;">Illustration de l'Algorithme PageRank</h1>
+    <p style="color: #555; font-size: 14px; max-width: 800px; text-align: center; margin-bottom: 20px;">L'algorithme PageRank, développé par Google, évalue l'importance des pages web en fonction des liens entrants. Chaque nœud représente une page, et les flèches indiquent des liens. Le facteur d'amortissement (damping factor) simule la probabilité qu'un utilisateur suive un lien. Utilisez cette application pour ajouter des nœuds, créer des liens, ajuster le damping factor (0 à 1), et calculer les scores PageRank. La matrice affichée montre les contributions normalisées pour chaque nœud.</p>
+    <div style="margin-bottom: 20px;">
+        <button onclick="addNode()" style="padding: 10px 20px; margin-right: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px;">Ajouter un Nœud</button>
+        <button onclick="startLinking()" style="padding: 10px 20px; margin-right: 10px; background-color: #008CBA; color: white; border: none; cursor: pointer; font-size: 16px;">Ajouter un Lien</button>
+        <button onclick="calculatePageRank()" style="padding: 10px 20px; margin-right: 10px; background-color: #f44336; color: white; border: none; cursor: pointer; font-size: 16px;">Calculer PageRank</button>
+        <label style="margin-right: 10px; color: #333; font-size: 16px;">Damping Factor (0-1):</label>
+        <input id="damping" type="number" step="0.01" min="0" max="1" value="0.85" style="padding: 5px; font-size: 16px; width: 80px;">
+    </div>
+    <p id="instruction" style="margin-bottom: 20px; color: #555; font-size: 14px;">Cliquez pour ajouter des nœuds, sélectionnez deux nœuds pour ajouter un lien, puis calculez les scores PageRank.</p>
+    <svg id="graph" width="800" height="600" style="background-color: white; border: 2px solid #333; margin-bottom: 20px;"></svg>
+    <div id="matrix-container" style="display: none; background-color: white; padding: 20px; border: 2px solid #333; max-width: 800px;">
+        <h2 style="color: #333; margin-top: 0;">Matrice PageRank</h2>
+        <table id="matrix-table" style="border-collapse: collapse; width: 100%;"></table>
+    </div>
+
+    <script>
+        const svg = document.getElementById('graph');
+        const instruction = document.getElementById('instruction');
+        let nodes = [];
+        let links = [];
+        let isLinking = false;
+        let firstNode = null;
+
+        // Définir la flèche pour les liens (placé avant les fonctions de dessin)
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.setAttribute("id", "arrow");
+        marker.setAttribute("viewBox", "0 0 10 10");
+        marker.setAttribute("refX", "9"); // Ajusté pour que la pointe de la flèche soit au bout de la ligne
+        marker.setAttribute("refY", "5");
+        marker.setAttribute("markerWidth", "6");
+        marker.setAttribute("markerHeight", "6");
+        marker.setAttribute("orient", "auto-start-reverse");
+        marker.setAttribute("markerUnits", "strokeWidth"); // Permet à la flèche de s'adapter à l'épaisseur du trait
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+        path.setAttribute("fill", "#333");
+        marker.appendChild(path);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+
+        // Ajouter un nœud
+        function addNode(x = Math.random() * 700 + 50, y = Math.random() * 500 + 50) { // Ajusté les coordonnées initiales
+            const id = nodes.length;
+            const node = { id, x, y, pr: 1 / (nodes.length + 1) };
+            nodes.push(node);
+
+            // Créer l'élément SVG pour le nœud
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", x);
+            circle.setAttribute("cy", y);
+            circle.setAttribute("r", 40);
+            circle.setAttribute("fill", "#FF9800");
+            circle.setAttribute("stroke", "#333");
+            circle.setAttribute("stroke-width", "2");
+            circle.setAttribute("id", `node-${id}`);
+            circle.setAttribute("cursor", "pointer");
+            circle.onclick = () => selectNode(node);
+            svg.appendChild(circle);
+
+            // Ajouter le texte (ID et PR)
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y + 5);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("fill", "#333");
+            text.setAttribute("font-size", "14");
+            text.setAttribute("id", `text-${id}`);
+            text.textContent = `P${id} (0.00)`; // Initialiser à 0.00 ou vide, car updateInitialPR sera appelé
+            svg.appendChild(text);
+
+            // Mettre à jour les PR initiaux
+            updateInitialPR();
+        }
+
+        // Mettre à jour les PR initiaux
+        function updateInitialPR() {
+            if (nodes.length === 0) return;
+            const pr = 1 / nodes.length;
+            nodes.forEach(node => {
+                node.pr = pr;
+                const text = document.getElementById(`text-${node.id}`);
+                text.textContent = `P${node.id} (${pr.toFixed(2)})`;
+            });
+        }
+
+        // Sélectionner un nœud pour créer un lien
+        function selectNode(node) {
+            if (!isLinking) return;
+            if (!firstNode) {
+                firstNode = node;
+                document.getElementById(`node-${node.id}`).setAttribute("fill", "#4CAF50");
+                instruction.textContent = "Cliquez sur le nœud de fin";
+            } else if (firstNode !== node) {
+                links.push({ source: firstNode, target: node });
+                drawLink(firstNode, node);
+                document.getElementById(`node-${firstNode.id}`).setAttribute("fill", "#FF9800");
+                firstNode = null;
+                isLinking = false;
+                instruction.textContent = "Cliquez pour ajouter des nœuds, sélectionnez deux nœuds pour ajouter un lien, puis calculez les scores PageRank.";
+            }
+        }
+
+        // Activer le mode lien
+        function startLinking() {
+            isLinking = true;
+            firstNode = null;
+            nodes.forEach(node => {
+                document.getElementById(`node-${node.id}`).setAttribute("fill", "#FF9800");
+            });
+            instruction.textContent = "Cliquez sur le nœud de départ";
+        }
+
+        // Dessiner un lien
+        function drawLink(source, target) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+
+            // Calculer les points de départ et d'arrivée pour que la flèche ne chevauche pas le cercle
+            const dx = target.x - source.x;
+            const dy = target.y - source.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const radius = 40; // Le rayon des nœuds
+
+            const unitDx = dx / distance;
+            const unitDy = dy / distance;
+
+            const startX = source.x + unitDx * radius;
+            const startY = source.y + unitDy * radius;
+            const endX = target.x - unitDx * radius;
+            const endY = target.y - unitDy * radius;
+
+            line.setAttribute("x1", startX);
+            line.setAttribute("y1", startY);
+            line.setAttribute("x2", endX);
+            line.setAttribute("y2", endY);
+            line.setAttribute("stroke", "#333");
+            line.setAttribute("stroke-width", "2");
+            line.setAttribute("marker-end", "url(#arrow)");
+            // Insérer la ligne avant les cercles et les textes pour qu'ils soient au-dessus
+            svg.insertBefore(line, svg.querySelector('circle')); // Insérer avant le premier cercle trouvé
+        }
+
+        // Calculer PageRank et afficher la matrice
+        function calculatePageRank() {
+            const dampingInput = document.getElementById('damping').value;
+            let damping = parseFloat(dampingInput);
+            if (isNaN(damping) || damping < 0 || damping > 1) {
+                alert("Le facteur d'amortissement doit être entre 0 et 1.");
+                return;
+            }
+            const iterations = 100;
+            const N = nodes.length;
+            if (N === 0) {
+                alert("Veuillez ajouter des nœuds avant de calculer le PageRank.");
+                return;
+            }
+
+            // Initialiser PR
+            nodes.forEach(node => node.pr = 1 / N);
+
+            // Construire la matrice d'adjacence
+            const outLinks = nodes.map(() => 0);
+            const adjMatrix = nodes.map(() => nodes.map(() => 0));
+            links.forEach(link => {
+                adjMatrix[link.source.id][link.target.id] = 1;
+                outLinks[link.source.id]++;
+            });
+
+            // Normaliser la matrice pour PageRank
+            const prMatrix = adjMatrix.map((row, i) =>
+                row.map(val => (val / (outLinks[i] || N)) * damping + (1 - damping) / N) // Si pas de lien sortant, distribue également
+            );
+
+            // Itérations de PageRank
+            for (let i = 0; i < iterations; i++) {
+                const newPR = nodes.map(() => 0);
+                nodes.forEach((_, j) => {
+                    nodes.forEach((_, k) => {
+                        newPR[j] += nodes[k].pr * prMatrix[k][j];
+                    });
+                });
+                nodes.forEach((node, idx) => node.pr = newPR[idx]);
+            }
+
+            // Normaliser les PR (pour s'assurer que la somme est 1)
+            const sumPR = nodes.reduce((sum, node) => sum + node.pr, 0);
+            nodes.forEach(node => {
+                node.pr /= sumPR;
+                const text = document.getElementById(`text-${node.id}`);
+                text.textContent = `P${node.id} (${node.pr.toFixed(2)})`;
+            });
+
+            // Afficher la matrice PageRank
+            displayMatrix(prMatrix);
+        }
+
+        // Afficher la matrice dans un tableau
+        function displayMatrix(matrix) {
+            const container = document.getElementById('matrix-container');
+            const table = document.getElementById('matrix-table');
+            table.innerHTML = '';
+            container.style.display = 'block';
+
+            // En-tête
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(createCell(''));
+            nodes.forEach(node => {
+                headerRow.appendChild(createCell(`P${node.id}`));
+            });
+            table.appendChild(headerRow);
+
+            // Lignes de la matrice
+            matrix.forEach((row, i) => {
+                const rowElement = document.createElement('tr');
+                rowElement.appendChild(createCell(`P${i}`));
+                row.forEach(val => {
+                    rowElement.appendChild(createCell(val.toFixed(3)));
+                });
+                table.appendChild(rowElement);
+            });
+        }
+
+        // Créer une cellule de tableau
+        function createCell(content) {
+            const cell = document.createElement('td');
+            cell.textContent = content;
+            cell.style.border = '1px solid #333';
+            cell.style.padding = '8px';
+            cell.style.textAlign = 'center';
+            cell.style.color = '#333';
+            cell.style.fontSize = '14px';
+            return cell;
+        }
+
+        // Ajouter quelques nœuds initiaux
+        addNode(200, 200);
+        addNode(400, 200);
+        addNode(300, 400);
+    </script>
+</body>
+</html>

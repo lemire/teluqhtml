@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application ETL</title>
+</head>
+<body style="font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f0f0; margin: 0; padding: 20px;">
+    <h1 style="color: #333; font-size: 2.5em; margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+        Démonstration du Processus ETL
+    </h1>
+    <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center;">
+        <button id="extractBtn" onclick="extractData()" style="padding: 15px 30px; font-size: 1.2em; color: #fff; background-color: #4CAF50; border: none; border-radius: 5px; cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#45a049'" onmouseout="this.style.backgroundColor='#4CAF50'">
+            Extraire (JSON)
+        </button>
+        <button id="transformCsvBtn" onclick="transformToCsv()" disabled style="padding: 15px 30px; font-size: 1.2em; color: #fff; background-color: #808080; border: none; border-radius: 5px; cursor: not-allowed; transition: transform 0.3s ease, background-color 0.3s ease;">
+            Transformer (CSV)
+        </button>
+        <button id="cleanBtn" onclick="cleanData()" disabled style="padding: 15px 30px; font-size: 1.2em; color: #fff; background-color: #808080; border: none; border-radius: 5px; cursor: not-allowed; transition: transform 0.3s ease, background-color 0.3s ease;">
+            Transformer (nettoyage)
+        </button>
+        <button id="loadBtn" onclick="loadData()" disabled style="padding: 15px 30px; font-size: 1.2em; color: #fff; background-color: #808080; border: none; border-radius: 5px; cursor: not-allowed; transition: transform 0.3s ease, background-color 0.3s ease;">
+            Charger (DB)
+        </button>
+    </div>
+    <div id="output" style="width: 80%; max-width: 800px; min-height: 200px; background-color: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); animation: fadeIn 1s ease;">
+        <p style="color: #666; font-style: italic;">Cliquez sur "Extraire" pour commencer le processus ETL.</p>
+    </div>
+
+    <script>
+        let jsonData = null;
+        let csvData = null;
+        let cleanedData = null;
+        let db = null;
+
+        // Animation pour les boutons
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+            });
+        });
+
+        // Simuler une base de données IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('ETL_Demo', 1);
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    db.createObjectStore('records', { keyPath: 'id' });
+                };
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve();
+                };
+                request.onerror = () => reject('Erreur d\'initialisation de la base de données');
+            });
+        }
+
+        // Étape 1 : Extraire les données JSON
+        async function extractData() {
+            document.getElementById('extractBtn').disabled = true;
+            document.getElementById('extractBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Extraction en cours...</p>';
+
+            // Simuler une récupération JSON avec des données incluant des erreurs
+            jsonData = [
+                { id: 1, name: 'alice', age: 25, salary: 50000 },
+                { id: 2, name: 'BOB', age: -5, salary: 60000 }, // Âge invalide
+                { id: 3, name: 'charlie', age: 35, salary: 75000 },
+                { id: 4, name: 'david', age: 28, salary: 999999 }, // Valeur aberrante
+                { id: 5, name: 'EVE', age: 0, salary: 80000 } // Âge invalide
+            ];
+
+            setTimeout(() => {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #4CAF50;">Données JSON Extraites</h3>
+                    <pre style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; animation: slideIn 0.5s ease;">
+                        ${JSON.stringify(jsonData, null, 2)}
+                    </pre>
+                `;
+                document.getElementById('transformCsvBtn').disabled = false;
+                document.getElementById('transformCsvBtn').style.backgroundColor = '#2196F3';
+                document.getElementById('transformCsvBtn').style.cursor = 'pointer';
+            }, 1000);
+        }
+
+        // Étape 2 : Transformer les données en CSV
+        function transformToCsv() {
+            document.getElementById('transformCsvBtn').disabled = true;
+            document.getElementById('transformCsvBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Transformation en CSV en cours...</p>';
+
+            // Convertir en CSV
+            const headers = ['id', 'name', 'age', 'salary'];
+            csvData = [headers.join(',')];
+            jsonData.forEach(item => {
+                csvData.push(headers.map(header => item[header]).join(','));
+            });
+            csvData = csvData.join('\n');
+
+            setTimeout(() => {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #2196F3;">Données Transformées en CSV</h3>
+                    <pre style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; animation: slideIn 0.5s ease;">
+                        ${csvData}
+                    </pre>
+                `;
+                document.getElementById('cleanBtn').disabled = false;
+                document.getElementById('cleanBtn').style.backgroundColor = '#9C27B0';
+                document.getElementById('cleanBtn').style.cursor = 'pointer';
+            }, 1000);
+        }
+
+        // Étape 3 : Nettoyer les données
+        function cleanData() {
+            document.getElementById('cleanBtn').disabled = true;
+            document.getElementById('cleanBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Nettoyage en cours...</p>';
+
+            // Nettoyage : supprimer âges <= 0, normaliser noms, supprimer salaires > 100000
+            cleanedData = jsonData.filter(item => item.age > 0 && item.salary <= 100000).map(item => ({
+                ...item,
+                name: item.name.charAt(0).toUpperCase() + item.name.slice(1).toLowerCase()
+            }));
+
+            // Convertir les données nettoyées en CSV
+            const headers = ['id', 'name', 'age', 'salary'];
+            const cleanedCsv = [headers.join(',')];
+            cleanedData.forEach(item => {
+                cleanedCsv.push(headers.map(header => item[header]).join(','));
+            });
+            const cleanedCsvText = cleanedCsv.join('\n');
+
+            setTimeout(() => {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #9C27B0;">Données Nettoyées</h3>
+                    <p style="color: #333;">Âges négatifs ou nuls supprimés, noms normalisés, salaires aberrants (>100000) éliminés.</p>
+                    <pre style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; animation: slideIn 0.5s ease;">
+                        ${cleanedCsvText}
+                    </pre>
+                `;
+                document.getElementById('loadBtn').disabled = false;
+                document.getElementById('loadBtn').style.backgroundColor = '#FF9800';
+                document.getElementById('loadBtn').style.cursor = 'pointer';
+            }, 1000);
+        }
+
+        // Étape 4 : Charger les données dans la base de données
+        async function loadData() {
+            document.getElementById('loadBtn').disabled = true;
+            document.getElementById('loadBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Chargement en cours...</p>';
+
+            try {
+                await initDB();
+                const transaction = db.transaction(['records'], 'readwrite');
+                const store = transaction.objectStore('records');
+
+                // Charger les données nettoyées
+                cleanedData.forEach(item => {
+                    store.put(item);
+                });
+
+                transaction.oncomplete = () => {
+                    document.getElementById('output').innerHTML = `
+                        <h3 style="color: #FF9800;">Données Chargées dans la Base de Données</h3>
+                        <p style="color: #333; animation: fadeIn 1s ease;">
+                            Les données nettoyées ont été chargées avec succès dans la base de données simulée (IndexedDB).
+                            Nombre d'enregistrements chargés : ${cleanedData.length}
+                        </p>
+                    `;
+                };
+            } catch (error) {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #e74c3c;">Erreur</h3>
+                    <p style="color: #333;">${error}</p>
+                `;
+            }
+        }
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</body>
+</html>

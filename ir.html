@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Recherche d'Information</title>
+</head>
+<body style="font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f0f0; margin: 0; padding: 20px;">
+    <h1 style="color: #333; font-size: 2.5em; margin-bottom: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">
+        Recherche d'Information
+    </h1>
+    <div style="width: 80%; max-width: 800px; margin-bottom: 20px;">
+        <textarea id="inputText" style="width: 100%; height: 150px; padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 5px; resize: vertical; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">Le chat dort sur le tapis.\nLe chien court dans le jardin.\nLe chat mange du poisson.\nUn oiseau chante dans l'arbre.\nLe chien aboie fort.</textarea>
+    </div>
+    <div style="display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;">
+        <button id="indexBtn" onclick="indexText()" style="padding: 15px 30px; font-size: 1.2em; color: #fff; background-color: #4CAF50; border: none; border-radius: 5px; cursor: pointer; transition: transform 0.3s ease, background-color 0.3s ease;" onmouseover="this.style.backgroundColor='#45a049'" onmouseout="this.style.backgroundColor='#4CAF50'">
+            Indexer le Texte
+        </button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <input id="queryInput" type="text" placeholder="Entrez votre requête..." disabled style="padding: 10px; font-size: 1em; border: 1px solid #ccc; border-radius: 5px; width: 200px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <button id="searchBtn" onclick="searchText()" disabled style="padding: 10px 20px; font-size: 1em; color: #fff; background-color: #808080; border: none; border-radius: 5px; cursor: not-allowed; transition: transform 0.3s ease, background-color 0.3s ease;">
+                Rechercher
+            </button>
+        </div>
+    </div>
+    <div id="output" style="width: 80%; max-width: 800px; min-height: 200px; background-color: #fff; border: 1px solid #ccc; border-radius: 5px; padding: 20px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); animation: fadeIn 1s ease;">
+        <p style="color: #666; font-style: italic;">Cliquez sur "Indexer le Texte" pour commencer, puis entrez une requête.</p>
+    </div>
+
+    <script>
+        let sentences = [];
+        let invertedIndex = {};
+        let wordCounts = {};
+
+        // Animation pour les boutons
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => { btn.style.transform = 'scale(1)'; }, 200);
+            });
+        });
+
+        // Étape 1 : Indexer le texte
+        function indexText() {
+            const text = document.getElementById('inputText').value.trim();
+            if (!text) {
+                document.getElementById('output').innerHTML = '<p style="color: #e74c3c;">Erreur : Veuillez entrer un texte à indexer.</p>';
+                return;
+            }
+
+            document.getElementById('indexBtn').disabled = true;
+            document.getElementById('indexBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Indexation en cours...</p>';
+
+            // Diviser le texte en phrases (une par ligne)
+            sentences = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+            invertedIndex = {};
+            wordCounts = {};
+
+            // Créer un index inversé et compter les occurrences
+            sentences.forEach((sentence, index) => {
+                const words = sentence.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+                words.forEach(word => {
+                    // Index inversé
+                    if (!invertedIndex[word]) {
+                        invertedIndex[word] = new Set();
+                    }
+                    invertedIndex[word].add(index);
+                    // Compteur d'occurrences
+                    wordCounts[word] = (wordCounts[word] || 0) + 1;
+                });
+            });
+
+            setTimeout(() => {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #4CAF50;">Texte Indexé</h3>
+                    <p style="color: #333;">Nombre de phrases indexées : ${sentences.length}</p>
+                    <p style="color: #333;">Mots uniques dans l'index : ${Object.keys(invertedIndex).length}</p>
+                    <pre style="background-color: #f9f9f9; padding: 10px; border-radius: 5px; animation: slideIn 0.5s ease;">
+                        ${JSON.stringify(invertedIndex, null, 2)}
+                    </pre>
+                `;
+                document.getElementById('queryInput').disabled = false;
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('searchBtn').style.backgroundColor = '#2196F3';
+                document.getElementById('searchBtn').style.cursor = 'pointer';
+            }, 1000);
+        }
+
+        // Étape 2 : Effectuer une recherche
+        function searchText() {
+            const query = document.getElementById('queryInput').value.trim().toLowerCase();
+            if (!query) {
+                document.getElementById('output').innerHTML = '<p style="color: #e74c3c;">Erreur : Veuillez entrer une requête.</p>';
+                return;
+            }
+
+            document.getElementById('searchBtn').disabled = true;
+            document.getElementById('searchBtn').style.backgroundColor = '#808080';
+            document.getElementById('output').innerHTML = '<p style="color: #333; animation: pulse 1s infinite;">Recherche en cours...</p>';
+
+            // Diviser la requête en mots
+            const queryWords = query.split(/\s+/).filter(word => word.length > 0);
+            let matchingSentenceIndices = null;
+
+            // Trouver les phrases contenant tous les mots de la requête
+            queryWords.forEach(word => {
+                if (invertedIndex[word]) {
+                    const indices = invertedIndex[word];
+                    if (matchingSentenceIndices === null) {
+                        matchingSentenceIndices = new Set(indices);
+                    } else {
+                        matchingSentenceIndices = new Set(
+                            [...matchingSentenceIndices].filter(i => indices.has(i))
+                        );
+                    }
+                } else {
+                    matchingSentenceIndices = new Set();
+                }
+            });
+
+            // Récupérer les phrases correspondantes
+            const results = matchingSentenceIndices
+                ? [...matchingSentenceIndices].map(index => sentences[index])
+                : [];
+
+            // Préparer les informations sur les mots de la requête
+            const wordInfo = queryWords.map(word => {
+                const indices = invertedIndex[word] ? [...invertedIndex[word]] : [];
+                const count = wordCounts[word] || 0;
+                return {
+                    word,
+                    found: indices.length > 0,
+                    indices,
+                    count
+                };
+            });
+
+            setTimeout(() => {
+                document.getElementById('output').innerHTML = `
+                    <h3 style="color: #2196F3;">Résultats de la Recherche</h3>
+                    <p style="color: #333;">Requête : "${query}"</p>
+                    <h4 style="color: #333; margin-top: 10px;">Analyse des Mots</h4>
+                    <ul style="list-style-type: none; padding: 0;">
+                        ${wordInfo.map(info => `
+                            <li style="background-color: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; animation: slideIn 0.5s ease;">
+                                Mot "${info.word}" : 
+                                ${info.found ? `Trouvé dans les phrases [${info.indices.join(', ')}], ${info.count} occurrence(s)` : 'Non trouvé'}
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <h4 style="color: #333; margin-top: 10px;">Phrases Correspondantes</h4>
+                    <p style="color: #333;">Nombre de phrases trouvées : ${results.length}</p>
+                    ${results.length > 0 ? `
+                        <ul style="list-style-type: none; padding: 0;">
+                            ${results.map(result => `
+                                <li style="background-color: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 5px; animation: slideIn 0.5s ease;">
+                                    ${result}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : '<p style="color: #666;">Aucune phrase ne contient tous les mots de la requête.</p>'}
+                `;
+                document.getElementById('searchBtn').disabled = false;
+                document.getElementById('searchBtn').style.backgroundColor = '#2196F3';
+                document.getElementById('searchBtn').style.cursor = 'pointer';
+            }, 1000);
+        }
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</body>
+</html>

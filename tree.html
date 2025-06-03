@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Arbre de Décision pour Prédiction de Notes</title>
+</head>
+<body class="bg-gray-100 p-6">
+  <script>
+    var dt=function(){function n(b){var c=v,e=b.trainingSet,d=b.ignoredAttributes,a={};if(d)for(var f in d)a[d[f]]=!0;this.root=c({trainingSet:e,ignoredAttributes:a,categoryAttr:b.categoryAttr||"category",minItemsCount:b.minItemsCount||1,entropyThrehold:b.entropyThrehold||0.01,maxTreeDepth:b.maxTreeDepth||70})}function p(b,c){for(var e=b.trainingSet,d=[],a=0;a<c;a++)d[a]=[];for(a=e.length-1;0<=a;a--)d[a%c].push(e[a]);e=[];for(a=0;a<c;a++){b.trainingSet=d[a];var f=new n(b);e.push(f)}this.trees=e}function q(b,
+c){for(var e={},d=b.length-1;0<=d;d--)e[b[d][c]]=0;for(d=b.length-1;0<=d;d--)e[b[d][c]]+=1;return e}function w(b,c){var e=q(b,c),d=0,a,f;for(f in e)a=e[f]/b.length,d+=-a*Math.log(a);return d}function x(b,c){var e=q(b,c),d=0,a,f;for(f in e)e[f]>d&&(d=e[f],a=f);return a}function v(b){var c=b.trainingSet,e=b.minItemsCount,d=b.categoryAttr,a=b.entropyThrehold,f=b.maxTreeDepth,n=b.ignoredAttributes;if(0==f||c.length<=e)return{category:x(c,d)};e=w(c,d);if(e<=a)return{category:x(c,d)};for(var m={},a={gain:0},
+y=c.length-1;0<=y;y--){var p=c[y],k;for(k in p)if(k!=d&&!n[k]){var s=p[k],t;t="number"==typeof s?">=":"==";var r=k+t+s;if(!m[r]){m[r]=!0;var r=D[t],g;g=c;for(var l=k,z=r,h=s,q=[],B=[],u=void 0,C=void 0,A=g.length-1;0<=A;A--)u=g[A],C=u[l],z(C,h)?q.push(u):B.push(u);g={match:q,notMatch:B};l=w(g.match,d);z=w(g.notMatch,d);h=0;h+=l*g.match.length;h+=z*g.notMatch.length;h/=c.length;l=e-h;l>a.gain&&(a=g,a.predicateName=t,a.predicate=r,a.attribute=k,a.pivot=s,a.gain=l)}}}if(!a.gain)return{category:x(c,d)};
+b.maxTreeDepth=f-1;b.trainingSet=a.match;c=v(b);b.trainingSet=a.notMatch;b=v(b);return{attribute:a.attribute,predicate:a.predicate,predicateName:a.predicateName,pivot:a.pivot,match:c,notMatch:b,matchedCount:a.match.length,notMatchedCount:a.notMatch.length}}n.prototype.predict=function(b){a:{for(var c=this.root,e,d,a;;){if(c.category){b=c.category;break a}e=c.attribute;e=b[e];d=c.predicate;a=c.pivot;c=d(e,a)?c.match:c.notMatch}b=void 0}return b};p.prototype.predict=function(b){var c=this.trees,e={},
+d;for(d in c){var a=c[d].predict(b);e[a]=e[a]?e[a]+1:1}return e};var D={"==":function(b,c){return b==c},">=":function(b,c){return b>=c}},m={};m.DecisionTree=n;m.RandomForest=p;return m}();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    #decisionTree { height: 600px; border: 1px solid #e5e7eb; } /* Hauteur augmentée pour meilleure visibilité */
+    #errorMessage { color: red; display: none; }
+  </style>
+  <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
+
+  <h1 class="text-2xl font-bold mb-4">Les arbres de décision</h1>
+    
+    <h2 class="text-xl font-semibold mb-2" >Introduction aux arbres de décision</h2>
+    <p>Les arbres de décision sont des outils d'apprentissage automatique utilisés pour résoudre des problèmes de classification et de régression. Ils modélisent les décisions sous forme d'une structure arborescente, où chaque nœud représente une question ou une condition, chaque branche une réponse possible, et chaque feuille une décision ou une prédiction finale. Leur popularité repose sur leur simplicité, leur interprétabilité et leur capacité à gérer des données complexes.</p>
+    
+    <h2 class="text-xl font-semibold mb-2" >Structure et fonctionnement</h2>
+    <p>Un arbre de décision se compose de trois éléments principaux :</p>
+    <ul>
+        <li><strong>Nœud racine</strong> : Point de départ, représentant l'ensemble des données.</li>
+        <li><strong>Nœuds internes</strong> : Points de division basés sur une condition (par exemple, "Âge > 30 ?").</li>
+        <li><strong>Feuilles</strong> : Résultats finaux, correspondant à une classe (classification) ou une valeur (régression).</li>
+    </ul>
+    <p>Le processus de construction d'un arbre repose sur la sélection de la meilleure condition à chaque nœud pour diviser les données. Cette division vise à réduire l'incertitude ou l'erreur. Les critères couramment utilisés incluent :</p>
+    <ul>
+        <li><strong>Gain d'information</strong> (basé sur l'entropie).</li>
+        <li><strong>Indice de Gini</strong> (mesure de l'impureté).</li>
+        <li><strong>Erreur quadratique moyenne</strong> (pour la régression).</li>
+    </ul>
+    <p>Une fois construit, l'arbre est utilisé pour prédire en suivant le chemin des conditions jusqu'à une feuille.</p>
+    
+    <h2 class="text-xl font-semibold mb-2" >Perspective historique</h2>
+    <p>Les arbres de décision ont des racines dans les années 1950 et 1960, époque où les statisticiens cherchaient des méthodes pour structurer des décisions complexes. Les premiers travaux sont attribués à des chercheurs comme William Belson, qui a introduit des techniques de segmentation dans les enquêtes sociales.</p>
+    <p>Dans les années 1960, les concepts d'arbres de décision ont été formalisés avec l'essor de l'informatique. L'algorithme AID (Automatic Interaction Detection), développé en 1963 par Morgan et Sonquist, a marqué une étape clé en introduisant des divisions automatiques basées sur des critères statistiques.</p>
+    <p>Les années 1980 ont vu l'émergence d'algorithmes modernes, notamment avec l'introduction de CART (Classification and Regression Trees) par Breiman, Friedman, Olshen et Stone en 1984. CART a popularisé les arbres en proposant des méthodes robustes pour la classification et la régression, utilisant l'indice de Gini et la réduction de variance. Parallèlement, l'algorithme ID3 de Ross Quinlan, publié en 1986, a introduit le gain d'information comme critère de division, suivi de son évolution C4.5 dans les années 1990.</p>
+    <p>Avec l'augmentation de la puissance de calcul et l'explosion des données dans les années 2000, les arbres de décision sont devenus un pilier de l'apprentissage automatique, intégrés dans des bibliothèques comme scikit-learn et utilisés dans des domaines variés, de la finance à la médecine.</p>
+    
+    <p>Les limites des arbres de décision ont conduit au développement des forêts aléatoires (Random Forests).
+        Les forêts aléatoires combinent plusieurs arbres de décision, chacun entraîné sur un sous-ensemble aléatoire des données et des caractéristiques. En agrégeant leurs prédictions (par vote majoritaire pour la classification ou moyenne pour la régression), les forêts aléatoires améliorent la robustesse et la précision. Cette approche a transformé les arbres de décision en un outil puissant, largement utilisé dans les applications modernes d'apprentissage automatique.
+    Par contre, dans plusieurs cas simples, les arbres de décision demeurent appropriés.</p>
+
+    <h2 class="text-xl font-semibold mb-2" >Laboratoire sur les arbres de décision</h3>
+    <p id="errorMessage" class="mt-2"></p>
+
+    <!-- Tableau des données -->
+    <h3 class="text-xl font-semibold mb-2">Données des Étudiants</h3>
+    <table id="studentTable" class="min-w-full bg-white border">
+      <thead>
+        <tr class="bg-gray-200">
+          <th>Nom</th>
+          <th>Date de Naissance</th>
+          <th>Ville</th>
+          <th>Programme</th>
+          <th>Note IA</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="studentTableBody"></tbody>
+    </table>
+
+    <!-- Formulaire pour ajouter un étudiant -->
+    <h3 class="text-xl font-semibold mt-6 mb-2">Ajouter un Étudiant</h3>
+    <div class="grid grid-cols-5 gap-4 mb-4">
+      <input id="nameInput" type="text" placeholder="Nom" class="border p-2 rounded">
+      <input id="dobInput" type="date" class="border p-2 rounded">
+      <select id="cityInput" class="border p-2 rounded">
+        <option value="Montréal">Montréal</option>
+        <option value="Québec">Québec</option>
+        <option value="Laval">Laval</option>
+        <option value="Gatineau">Gatineau</option>
+      </select>
+      <select id="programInput" class="border p-2 rounded">
+        <option value="Informatique">Informatique</option>
+        <option value="Mathématiques">Mathématiques</option>
+        <option value="Physique">Physique</option>
+      </select>
+      <select id="gradeInput" class="border p-2 rounded">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+      </select>
+    </div>
+    <button onclick="addStudent()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Ajouter</button>
+
+    <!-- Bouton pour apprendre l'arbre -->
+    <h2 class="text-xl font-semibold mt-6 mb-2">Entraîner l'arbre de décision</h2>
+    <button onclick="trainDecisionTree()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Apprendre</button>
+
+    <!-- Visualisation de l'arbre -->
+    <h2 class="text-xl font-semibold mt-6 mb-2">Arbre de décision</h2>
+    <div id="decisionTree"></div>
+
+    <!-- Formulaire pour prédiction -->
+    <h2 class="text-xl font-semibold mt-6 mb-2">Faire une prédiction</h2>
+    <div class="grid grid-cols-4 gap-4 mb-4">
+      <input id="predictName" type="text" placeholder="Nom" class="border p-2 rounded">
+      <input id="predictDob" type="date" class="border p-2 rounded">
+      <select id="predictCity" class="border p-2 rounded">
+        <option value="Montréal">Montréal</option>
+        <option value="Québec">Québec</option>
+        <option value="Laval">Laval</option>
+        <option value="Gatineau">Gatineau</option>
+      </select>
+      <select id="predictProgram" class="border p-2 rounded">
+        <option value="Informatique">Informatique</option>
+        <option value="Mathématiques">Mathématiques</option>
+        <option value="Physique">Physique</option>
+      </select>
+    </div>
+    <button onclick="predictGrade()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Prédire</button>
+    <p id="predictionResult" class="mt-2"></p>
+
+<h3 class="text-xl font-semibold mb-2" >Exercice</h3>
+
+<p>Commencez avec les 10 étudiants fournis dans l'application.</p>
+<ol>
+  <li>Entraînez l'arbre de décision en cliquant sur "Apprendre".</li>
+  <li>Observez la structure de l'arbre visualisé.</li>
+  <li>Ajoutez 5 nouveaux étudiants via le formulaire "Ajouter un Étudiant". Variez les valeurs (par exemple, différentes villes, programmes, et notes).</li>
+  <li>Entraînez à nouveau l'arbre et comparez la nouvelle structure avec la précédente.</li>
+  </ol>
+  </div>
+  <script>
+    // Gestion des erreurs globales
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.innerText = `Erreur : ${msg}. Vérifiez la console pour plus de détails.`;
+      errorMessage.style.display = "block";
+      console.error(error);
+      return false;
+    };
+
+    // Vérifier si la bibliothèque decision-tree-js est chargée
+    if (typeof dt === "undefined" || !dt.DecisionTree) {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.innerText = "Erreur : La bibliothèque decision-tree-js n'est pas chargée correctement.";
+      errorMessage.style.display = "block";
+      throw new Error("decision-tree-js not loaded");
+    }
+
+    // Données initiales
+    const students = [
+      { name: "Jean Tremblay", dob: "2000-01-15", city: "Montréal", program: "Informatique", grade: "A" },
+      { name: "Marie Gagnon", dob: "1999-03-22", city: "Québec", program: "Mathématiques", grade: "B" },
+      { name: "François Lefebvre", dob: "2001-07-10", city: "Laval", program: "Physique", grade: "C" },
+      { name: "Sophie Bélanger", dob: "2000-11-30", city: "Gatineau", program: "Informatique", grade: "A" },
+      { name: "Pierre Dubois", dob: "1998-05-05", city: "Montréal", program: "Mathématiques", grade: "B" },
+      { name: "Chantal Roy", dob: "2002-02-18", city: "Québec", program: "Physique", grade: "D" },
+      { name: "Luc Martineau", dob: "1999-09-12", city: "Laval", program: "Informatique", grade: "A" },
+      { name: "Isabelle Côté", dob: "2001-04-25", city: "Gatineau", program: "Mathématiques", grade: "C" },
+      { name: "Michel Lafleur", dob: "2000-08-08", city: "Montréal", program: "Physique", grade: "B" },
+      { name: "Nathalie Deschênes", dob: "1999-12-01", city: "Québec", program: "Informatique", grade: "A" }
+    ];
+
+    let decisionTree = null;
+
+    // Afficher les données initiales
+    function displayStudents() {
+      const tbody = document.getElementById("studentTableBody");
+      tbody.innerHTML = "";
+      students.forEach((student, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${student.name}</td>
+          <td>${student.dob}</td>
+          <td>${student.city}</td>
+          <td>${student.program}</td>
+          <td>${student.grade}</td>
+          <td><button onclick="deleteStudent(${index})" class="text-red-500 hover:underline">Supprimer</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Ajouter un étudiant
+    function addStudent() {
+      const name = document.getElementById("nameInput").value.trim();
+      const dob = document.getElementById("dobInput").value;
+      const city = document.getElementById("cityInput").value;
+      const program = document.getElementById("programInput").value;
+      const grade = document.getElementById("gradeInput").value;
+
+      if (name && dob && city && program && grade) {
+        students.push({ name, dob, city, program, grade });
+        displayStudents();
+        clearAddForm();
+      } else {
+        alert("Veuillez remplir tous les champs.");
+      }
+    }
+
+    // Supprimer un étudiant
+    function deleteStudent(index) {
+      students.splice(index, 1);
+      displayStudents();
+    }
+
+    // Vider le formulaire d'ajout
+    function clearAddForm() {
+      document.getElementById("nameInput").value = "";
+      document.getElementById("dobInput").value = "";
+      document.getElementById("cityInput").value = "Montréal";
+      document.getElementById("programInput").value = "Informatique";
+      document.getElementById("gradeInput").value = "A";
+    }
+
+    // Entraîner l'arbre de décision
+    function trainDecisionTree() {
+      try {
+        const config = {
+          trainingSet: students,
+          categoryAttr: "grade",
+          ignoredAttributes: ["name"], // Ignorer 'name' car non pertinent pour la prédiction
+          minItemsCount: 1,
+          entropyThrehold: 0.01,
+          maxTreeDepth: 5 // Réduit pour un arbre plus lisible
+        };
+        decisionTree = new dt.DecisionTree(config);
+        console.log("Arbre de décision entraîné avec succès", decisionTree);
+
+        visualizeTree(decisionTree);
+        document.getElementById("errorMessage").style.display = "none";
+      } catch (error) {
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.innerText = `Erreur lors de l'entraînement : ${error.message}`;
+        errorMessage.style.display = "block";
+        console.error(error);
+      }
+    }
+
+    // Visualiser l'arbre avec vis.js
+    function visualizeTree(tree) {
+      try {
+        if (!vis || !vis.Network) {
+          throw new Error("vis-network not loaded");
+        }
+
+        const nodes = [];
+        const edges = [];
+        let nodeId = 0;
+
+        function traverse(node, parentId = null) {
+          const currentId = nodeId++;
+          let label;
+
+          // Si le nœud est une feuille (catégorie)
+          if (node.category) {
+            label = `Note: ${node.category}`;
+            nodes.push({
+              id: currentId,
+              label: label,
+              shape: "box",
+              color: { background: "#90EE90", border: "#228B22" } // Vert pour les feuilles
+            });
+          } else {
+            // Nœud de décision
+            label = `${node.attribute} ${node.predicateName} ${node.pivot}`;
+            nodes.push({
+              id: currentId,
+              label: label,
+              shape: "ellipse",
+              color: { background: "#ADD8E6", border: "#4682B4" } // Bleu pour les nœuds de décision
+            });
+          }
+
+          if (parentId !== null) {
+            edges.push({ from: parentId, to: currentId });
+          }
+
+          // Parcourir les branches match et notMatch
+          if (node.match) {
+            const matchId = traverse(node.match, currentId);
+            edges.push({
+              from: currentId,
+              to: matchId,
+              label: "Oui",
+              color: { color: "#228B22" }
+            });
+          }
+          if (node.notMatch) {
+            const notMatchId = traverse(node.notMatch, currentId);
+            edges.push({
+              from: currentId,
+              to: notMatchId,
+              label: "Non",
+              color: { color: "#DC143C" }
+            });
+          }
+
+          return currentId;
+        }
+
+        traverse(tree.root);
+
+        const container = document.getElementById("decisionTree");
+        const data = {
+          nodes: new vis.DataSet(nodes),
+          edges: new vis.DataSet(edges)
+        };
+        const options = {
+          layout: {
+            hierarchical: {
+              direction: "UD", // De haut en bas
+              sortMethod: "directed",
+              levelSeparation: 150,
+              nodeSpacing: 200
+            }
+          },
+          edges: {
+            arrows: "to",
+            font: { align: "middle" }
+          },
+          physics: false
+        };
+        new vis.Network(container, data, options);
+      } catch (error) {
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.innerText = `Erreur lors de la visualisation : ${error.message}`;
+        errorMessage.style.display = "block";
+        console.error(error);
+      }
+    }
+
+    // Faire une prédiction
+    function predictGrade() {
+      try {
+        if (!decisionTree) {
+          alert("Veuillez d'abord entraîner l'arbre de décision.");
+          return;
+        }
+
+        const name = document.getElementById("predictName").value.trim();
+        const dob = document.getElementById("predictDob").value;
+        const city = document.getElementById("predictCity").value;
+        const program = document.getElementById("predictProgram").value;
+
+        if (dob && city && program) {
+          const prediction = decisionTree.predict({ name, dob, city, program });
+          document.getElementById("predictionResult").innerText = `Note prédite : ${prediction}`;
+          document.getElementById("errorMessage").style.display = "none";
+        } else {
+          alert("Veuillez remplir tous les champs pour la prédiction (sauf le nom, facultatif).");
+        }
+      } catch (error) {
+        const errorMessage = document.getElementById("errorMessage");
+        errorMessage.innerText = `Erreur lors de la prédiction : ${error.message}`;
+        errorMessage.style.display = "block";
+        console.error(error);
+      }
+    }
+
+    // Initialiser l'affichage
+    try {
+      displayStudents();
+    } catch (error) {
+      const errorMessage = document.getElementById("errorMessage");
+      errorMessage.innerText = `Erreur lors de l'initialisation : ${error.message}`;
+      errorMessage.style.display = "block";
+      console.error(error);
+    }
+  </script>
+
+  </body>
+</html>

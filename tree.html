@@ -15,8 +15,13 @@ d;for(d in c){var a=c[d].predict(b);e[a]=e[a]?e[a]+1:1}return e};var D={"==":fun
   <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    #decisionTree { height: 600px; border: 1px solid #e5e7eb; } /* Hauteur augmentée pour meilleure visibilité */
     #errorMessage { color: red; display: none; }
+    #decisionTree {
+  height: 800px; /* Hauteur plus grande pour accueillir l'arbre */
+  width: 100%; /* Utiliser toute la largeur disponible */
+  border: 1px solid #e5e7eb;
+  background: #ffffff; /* Fond blanc pour contraste */
+}
   </style>
   <div class="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow-md">
 

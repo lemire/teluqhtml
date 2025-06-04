@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travail pratique noté en apprentissage machine</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f4f4;">
+    <h1 style="text-align: center; color: #333;">Travail pratique noté : régression et arbres de décision</h1>
+
+    <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="color: #333;">Objectif</h2>
+        <p style="font-size: 16px; color: #333;">
+            Ce travail pratique évalue votre capacité à appliquer des techniques d'apprentissage machine pour résoudre des problèmes concrets. Vous utiliserez une interface web pour :
+            <ul style="margin-left: 20px; font-size: 16px; color: #333;">
+                <li>Implémenter une régression linéaire pour prédire la consommation énergétique d'un bâtiment.</li>
+                <li>Construire un arbre de décision pour classer les clients selon leur risque de résiliation.</li>
+            </ul>
+            Vous saisirez des données prédéfinies, entraînerez des modèles, visualiserez les résultats et répondrez à des questions d'analyse. Ce travail combine codage, visualisation et interprétation pratique.
+        </p>
+        <p style="font-size: 16px; color: #333;"><strong>Instructions :</strong></p>
+        <ul style="margin-left: 20px; font-size: 16px; color: #333;">
+            <li>Utilisez les données fournies dans chaque section pour remplir les champs.</li>
+            <li>Entraînez les modèles, analysez les graphiques générés et effectuez les prédictions demandées.</li>
+            <li>Répondez aux questions dans un document séparé (PDF ou Word) en vous appuyant sur les résultats.</li>
+            <li>Soumettez votre document avec les réponses et des captures d'écran des graphiques (courbe de régression et arbre de décision).</li>
+            <li><strong>Délai :</strong> [Insérez la date limite ici].</li>
+        </ul>
+    </div>
+
+    <!-- Partie 1 : Régression linéaire -->
+    <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="color: #333;">Partie 1 : régression linéaire – prédiction de la consommation énergétique</h2>
+        <p style="font-size: 16px; color: #333;">
+            Une entreprise de gestion immobilière souhaite prédire la consommation énergétique mensuelle (en kWh) des bâtiments en fonction de leur superficie (en m²). Vous utiliserez une régression linéaire pour modéliser cette relation.
+        </p>
+        <h3 style="color: #333;">Données</h3>
+        <p style="font-size: 16px; color: #333;">Saisissez les paires suivantes (superficie, consommation) dans les champs ci-dessous :</p>
+        <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+            <li>(120, 2200)</li>
+            <li>(160, 2800)</li>
+            <li>(200, 3200)</li>
+            <li>(240, 3600)</li>
+            <li>(280, 4100)</li>
+            <li>(300, 4500)</li>
+        </ul>
+        <div id="regressionInputs" style="margin-bottom: 15px;"></div>
+        <button onclick="addRegressionInput()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Ajouter une paire</button>
+        <button onclick="trainRegressionModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Entraîner le modèle</button>
+
+        <div id="regressionResults" style="display: none; margin-top: 20px;">
+            <h3 style="color: #333;">Résultats</h3>
+            <p id="regressionMetrics" style="font-size: 16px; color: #333;"></p>
+            <canvas id="regressionChart" style="max-width: 100%; margin-top: 20px;"></canvas>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3 style="color: #333;">Prédiction</h3>
+            <p style="font-size: 16px; color: #333;">Prédisez la consommation pour une superficie de <strong>180 m²</strong>.</p>
+            <input id="sizePredict" type="number" step="any" placeholder="Superficie (m²)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 120px; margin-right: 10px;">
+            <button onclick="predictEnergy()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire la consommation</button>
+            <p id="energyPrediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+        </div>
+
+        <div style="margin-top: 20px; font-style: italic;">
+            <h3 style="color: #333;">Questions</h3>
+            <ol style="font-size: 16px; color: #333; margin-left: 20px;">
+                <li>Est-ce que la régression linéaire est utile dans ce scénario ?</li>
+                <li>Interprétez l'erreur quadratique moyenne (MSE) affichée. Que signifie une valeur faible ou élevée dans ce contexte ?</li>
+                <li>Le graphique des prédictions montre-t-il une relation linéaire forte ? Identifiez tout écart notable entre les points réels et la courbe prédite.</li>
+                <li>La prédiction pour une superficie de 180 m² est-elle fiable ? Discutez des limites du modèle dans ce scénario.</li>
+                <li>Comment l'entreprise peut-elle utiliser ce modèle pour optimiser la gestion énergétique des bâtiments ?</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Partie 2 : Arbre de décision -->
+    <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="color: #333;">Partie 2 : arbre de décision – classification du risque de résiliation</h2>
+        <p style="font-size: 16px; color: #333;">
+            Une entreprise de télécommunications veut identifier les clients susceptibles de résilier leur abonnement. Vous utiliserez un arbre de décision pour classer les clients en fonction de leur durée d'abonnement (en mois) et de leur facture mensuelle (en $).
+        </p>
+        <h3 style="color: #333;">Données</h3>
+        <p style="font-size: 16px; color: #333;">Saisissez les données suivantes (durée, facture, résiliation) dans les champs ci-dessous :</p>
+        <ul style="font-size: 14px; color: #333; margin-left: 20px;">
+            <li>(10, 45, 0)</li>
+            <li>(10, 90, 1)</li>
+            <li>(20, 60, 0)</li>
+            <li>(3, 44, 1)</li>
+            <li>(15, 50, 0)</li>
+            <li>(8, 95, 1)</li>
+            <li>(25, 55, 0)</li>
+        </ul>
+        <div id="treeInputs" style="margin-bottom: 15px;"></div>
+        <button onclick="addTreeInput()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Ajouter un client</button>
+        <button onclick="trainTreeModel()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Entraîner le modèle</button>
+
+        <div id="treeResults" style="display: none; margin-top: 20px;">
+            <h3 style="color: #333;">Résultats</h3>
+            <p id="treeMetrics" style="font-size: 16px; color: #333;"></p>
+            <div id="treeNetwork" style="height: 800px; width: 100%; margin-top: 20px;"></div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3 style="color: #333;">Prédiction</h3>
+            <p style="font-size: 16px; color: #333;">Prédisez la résiliation pour un client avec : <strong>durée = 12 mois</strong>, <strong>facture = 75 $</strong>.</p>
+            <input id="tenurePredict" type="number" step="any" placeholder="Durée (mois)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100px; margin-right: 10px;">
+            <input id="billPredict" type="number" step="any" placeholder="Facture ($)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100px; margin-right: 10px;">
+            <button onclick="predictChurn()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Prédire la résiliation</button>
+            <p id="churnPrediction" style="font-size: 16px; color: #333; margin-top: 10px;"></p>
+        </div>
+
+        <div style="margin-top: 20px; font-style: italic;">
+            <h3 style="color: #333;">Questions</h3>
+            <ol style="font-size: 16px; color: #333; margin-left: 20px;">
+                <li>Pourquoi un arbre de décision est-il adapté pour ce problème de classification ?</li>
+                <li>Interprétez l'accuracy affichée. Une valeur élevée garantit-elle un bon modèle dans ce contexte ?</li>
+                <li>La visualisation de l'arbre montre-t-elle une séparation claire des clients ? Quelle variable (durée ou facture) semble la plus importante pour la classification ?</li>
+                <li>La prédiction pour le client donné est-elle fiable ? Discutez des limites de l'arbre de décision dans ce scénario.</li>
+                <li>Comment l'entreprise peut-elle utiliser ce modèle pour réduire le taux de résiliation ?</li>
+            </ol>
+        </div>
+    </div>
+
+    <div style="background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h2 style="color: #333;">Soumission</h2>
+        <p style="font-size: 16px; color: #333;">
+            Soumettez un document (PDF ou Word) contenant :
+            <ul style="font-size: 16px; color: #333; margin-left: 20px;">
+                <li>Vos réponses aux 10 questions (5 par partie), rédigées en phrases complètes et appuyées par les résultats observés.</li>
+                <li>Des captures d'écran des graphiques générés (courbe de régression et arbre de décision).</li>
+                <li>Une brève explication des résultats obtenus pour chaque modèle (par exemple, performance du modèle, observations clés).</li>
+            </ul>
+            Assurez-vous que vos réponses sont claires, complètes et font référence aux visualisations et métriques affichées.
+        </p>
+    </div>
+
+    <script>
+        // Decision Tree Code (from provided script)
+        var dt = (function() {
+            function n(b) {
+                var c = v,
+                    e = b.trainingSet,
+                    d = b.ignoredAttributes,
+                    a = {};
+                if (d) for (var f in d) a[d[f]] = !0;
+                this.root = c({
+                    trainingSet: e,
+                    ignoredAttributes: a,
+                    categoryAttr: b.categoryAttr || "category",
+                    minItemsCount: b.minItemsCount || 1,
+                    entropyThrehold: b.entropyThrehold || 0.01,
+                    maxTreeDepth: b.maxTreeDepth || 70
+                });
+            }
+            function p(b, c) {
+                for (var e = b.trainingSet, d = [], a = 0; a < c; a++) d[a] = [];
+                for (a = e.length - 1; 0 <= a; a--) d[a % c].push(e[a]);
+                e = [];
+                for (a = 0; a < c; a++) {
+                    b.trainingSet = d[a];
+                    var f = new n(b);
+                    e.push(f);
+                }
+                this.trees = e;
+            }
+            function q(b, c) {
+                var e = {}, d = b.length - 1;
+                for (; 0 <= d; d--) e[b[d][c]] = 0;
+                for (d = b.length - 1; 0 <= d; d--) e[b[d][c]] += 1;
+                return e;
+            }
+            function w(b, c) {
+                var e = q(b, c), d = 0, a, f;
+                for (f in e) a = e[f] / b.length, d += -a * Math.log(a);
+                return d;
+            }
+            function x(b, c) {
+                var e = q(b, c), d = 0, a, f;
+                for (f in e) e[f] > d && (d = e[f], a = f);
+                return a;
+            }
+            function v(b) {
+                var c = b.trainingSet,
+                    e = b.minItemsCount,
+                    d = b.categoryAttr,
+                    a = b.entropyThrehold,
+                    f = b.maxTreeDepth,
+                    n = b.ignoredAttributes;
+                if (0 == f || c.length <= e) return { category: x(c, d) };
+                e = w(c, d);
+                if (e <= a) return { category: x(c, d) };
+                for (var m = {}, a = { gain: 0 }, y = c.length - 1; 0 <= y; y--) {
+                    var p = c[y], k;
+                    for (k in p) if (k != d && !n[k]) {
+                        var s = p[k], t;
+                        t = "number" == typeof s ? ">=" : "==";
+                        var r = k + t + s;
+                        if (!m[r]) {
+                            m[r] = !0;
+                            var r = D[t], g;
+                            g = c;
+                            for (var l = k, z = r, h = s, q = [], B = [], u = void 0, C = void 0, A = g.length - 1; 0 <= A; A--) u = g[A], C = u[l], z(C, h) ? q.push(u) : B.push(u);
+                            g = { match: q, notMatch: B };
+                            l = w(g.match, d);
+                            z = w(g.notMatch, d);
+                            h = 0;
+                            h += l * g.match.length;
+                            h += z * g.notMatch.length;
+                            h /= c.length;
+                            l = e - h;
+                            l > a.gain && (a = g, a.predicateName = t, a.predicate = r, a.attribute = k, a.pivot = s, a.gain = l);
+                        }
+                    }
+                }
+                if (!a.gain) return { category: x(c, d) };
+                b.maxTreeDepth = f - 1;
+                b.trainingSet = a.match;
+                c = v(b);
+                b.trainingSet = a.notMatch;
+                b = v(b);
+                return {
+                    attribute: a.attribute,
+                    predicate: a.predicate,
+                    predicateName: a.predicateName,
+                    pivot: a.pivot,
+                    match: c,
+                    notMatch: b,
+                    matchedCount: a.match.length,
+                    notMatchedCount: a.notMatch.length
+                };
+            }
+            n.prototype.predict = function(b) {
+                for (var c = this.root, e, d, a;;) {
+                    if (c.category) return c.category;
+                    e = c.attribute;
+                    e = b[e];
+                    d = c.predicate;
+                    a = c.pivot;
+                    c = d(e, a) ? c.match : c.notMatch;
+                }
+            };
+            p.prototype.predict = function(b) {
+                var c = this.trees, e = {}, d;
+                for (d in c) {
+                    var a = c[d].predict(b);
+                    e[a] = e[a] ? e[a] + 1 : 1;
+                }
+                return e;
+            };
+            var D = {
+                "==": function(b, c) { return b == c; },
+                ">=": function(b, c) { return b >= c; }
+            };
+            return { DecisionTree: n, RandomForest: p };
+        })();
+
+        // Regression and Decision Tree Logic
+        let regressionInputCount = 0;
+        let treeInputCount = 0;
+        let regressionModel = null;
+        let treeModel = null;
+        let regressionChart = null;
+
+        // Regression Input Management
+        function addRegressionInput() {
+            if (regressionInputCount >= 6) {
+                alert("Maximum 6 paires atteintes !");
+                return;
+            }
+            const inputsDiv = document.getElementById('regressionInputs');
+            const div = document.createElement('div');
+            div.style.marginBottom = '15px';
+            div.innerHTML = `
+                <input type="number" step="any" placeholder="Superficie (m²)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 120px; margin-right: 10px;">
+                <input type="number" step="any" placeholder="Consommation (kWh)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 120px;">
+            `;
+            inputsDiv.appendChild(div);
+            regressionInputCount++;
+        }
+
+        function getRegressionData() {
+            const inputs = document.querySelectorAll('#regressionInputs input');
+            const data = [];
+            for (let i = 0; i < inputs.length; i += 2) {
+                const x = parseFloat(inputs[i].value);
+                const y = parseFloat(inputs[i + 1].value);
+                if (!isNaN(x) && !isNaN(y)) {
+                    data.push({ x, y });
+                }
+            }
+            return data;
+        }
+
+        // Train Linear Regression Model (Normal Equation)
+        function trainRegressionModel() {
+            const data = getRegressionData();
+            if (data.length < 6) {
+                alert("Veuillez entrer les 6 paires de données fournies !");
+                return;
+            }
+
+            // Normalize data
+            const xValues = data.map(d => d.x);
+            const yValues = data.map(d => d.y);
+            const xMin = Math.min(...xValues);
+            const xMax = Math.max(...xValues);
+            const yMin = Math.min(...yValues);
+            const yMax = Math.max(...yValues);
+            const normalizedData = data.map(d => ({
+                x: (d.x - xMin) / (xMax - xMin) || 0,
+                y: (d.y - yMin) / (yMax - yMin) || 0
+            }));
+
+            // Linear regression using normal equation: w = (X^T X)^(-1) X^T y
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            const n = normalizedData.length;
+            normalizedData.forEach(d => {
+                sumX += d.x;
+                sumY += d.y;
+                sumXY += d.x * d.y;
+                sumXX += d.x * d.x;
+            });
+            const w = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const b = (sumY - w * sumX) / n;
+            regressionModel = { w, b, xMin, xMax, yMin, yMax };
+
+            // Compute MSE
+            let mse = 0;
+            data.forEach(d => {
+                const xNorm = (d.x - xMin) / (xMax - xMin) || 0;
+                const predNorm = w * xNorm + b;
+                const pred = predNorm * (yMax - yMin) + yMin;
+                mse += (pred - d.y) ** 2;
+            });
+            mse /= n;
+
+            // Display results
+            document.getElementById('regressionResults').style.display = 'block';
+            document.getElementById('regressionMetrics').innerText = `Erreur quadratique moyenne (MSE) : ${mse.toFixed(2)}`;
+
+            // Plot regression line
+            const ctx = document.getElementById('regressionChart').getContext('2d');
+            if (regressionChart) regressionChart.destroy();
+            const xRange = xMax - xMin;
+            const predictedX = Array.from({ length: 100 }, (_, i) => xMin + (i / 99) * xRange);
+            const predictedY = predictedX.map(x => {
+                const xNorm = (x - xMin) / (xMax - xMin) || 0;
+                const yNorm = w * xNorm + b;
+                return yNorm * (yMax - yMin) + yMin;
+            });
+            regressionChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Données',
+                            data: data,
+                            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                            pointRadius: 5
+                        },
+                        {
+                            label: 'Régression linéaire',
+                            data: predictedX.map((x, i) => ({ x, y: predictedY[i] })),
+                            type: 'line',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            fill: false,
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: { title: { display: true, text: 'Superficie (m²)' } },
+                        y: { title: { display: true, text: 'Consommation (kWh)' } }
+                    }
+                }
+            });
+        }
+
+        // Predict Energy Consumption
+        function predictEnergy() {
+            const x = parseFloat(document.getElementById('sizePredict').value);
+            if (isNaN(x)) {
+                alert("Veuillez entrer une superficie valide !");
+                return;
+            }
+            if (!regressionModel) {
+                alert("Veuillez d'abord entraîner le modèle !");
+                return;
+            }
+            const { w, b, xMin, xMax, yMin, yMax } = regressionModel;
+            const xNorm = (x - xMin) / (xMax - xMin) || 0;
+            const yNorm = w * xNorm + b;
+            const y = yNorm * (yMax - yMin) + yMin;
+            document.getElementById('energyPrediction').innerText = `Pour une superficie de ${x} m², consommation prévue : ${y.toFixed(2)} kWh`;
+        }
+
+        // Decision Tree Input Management
+        function addTreeInput() {
+            if (treeInputCount >= 7) {
+                alert("Maximum 7 clients atteints !");
+                return;
+            }
+            const inputsDiv = document.getElementById('treeInputs');
+            const div = document.createElement('div');
+            div.style.marginBottom = '15px';
+            div.innerHTML = `
+                <input type="number" step="any" placeholder="Durée (mois)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100px; margin-right: 10px;">
+                <input type="number" step="any" placeholder="Facture ($)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100px; margin-right: 10px;">
+                <input type="number" min="0" max="1" placeholder="Résiliation (0/1)" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px; width: 100px;">
+            `;
+            inputsDiv.appendChild(div);
+            treeInputCount++;
+        }
+
+        function getTreeData() {
+            const inputs = document.querySelectorAll('#treeInputs input');
+            const data = [];
+            for (let i = 0; i < inputs.length; i += 3) {
+                const durée = parseFloat(inputs[i].value);
+                const facture = parseFloat(inputs[i + 1].value);
+                const churn = parseInt(inputs[i + 2].value);
+                if (!isNaN(durée) && !isNaN(facture) && !isNaN(churn) && (churn === 0 || churn === 1)) {
+                    data.push({ durée, facture, category: churn });
+                }
+            }
+            return data;
+        }
+
+        // Train Decision Tree Model
+        function trainTreeModel() {
+            const data = getTreeData();
+            if (data.length < 7) {
+                alert("Veuillez entrer les 7 clients fournis !");
+                return;
+            }
+
+            // Train decision tree
+            treeModel = new dt.DecisionTree({
+                trainingSet: data,
+                categoryAttr: 'category',
+                maxTreeDepth: 5
+            });
+
+            // Compute accuracy
+            let correct = 0;
+            data.forEach(d => {
+                const pred = treeModel.predict({ durée: d.durée, facture: d.facture });
+                console.log(`Predicted: ${pred}, Actual: ${d.category}`);
+                if (Number(pred) === d.category) correct++;
+                console.log(`correct: ${correct}, pred === d.category: ${pred === d.category}`);
+
+            });
+            console.log(`Correct predictions: ${correct} out of ${data.length}`);
+            const accuracy = (correct / data.length) * 100;
+
+            // Display results
+            document.getElementById('treeResults').style.display = 'block';
+            document.getElementById('treeMetrics').innerText = `Accuracy : ${accuracy.toFixed(2)}%`;
+
+            // Visualize decision tree with vis-network
+            const nodes = [];
+            const edges = [];
+            let nodeId = 0;
+            function traverse(node, parentId = null, depth = 0) {
+                const currentId = nodeId++;
+                let label;
+                if (node.category !== undefined) {
+                    label = `Classe: ${node.category}`;
+                    nodes.push({
+                        id: currentId,
+                        label: label,
+                        color: node.category === 1 ? '#ff9999' : '#99ff99',
+                        shape: 'box'
+                    });
+                } else {
+                    label = `${node.attribute} ${node.predicateName} ${node.pivot.toFixed(2)}`;
+                    nodes.push({
+                        id: currentId,
+                        label: label,
+                        shape: 'ellipse'
+                    });
+                    const matchId = nodeId;
+                    traverse(node.match, matchId, depth + 1);
+                    edges.push({ from: currentId, to: matchId, label: 'Oui' });
+                    const notMatchId = nodeId;
+                    traverse(node.notMatch, notMatchId, depth + 1);
+                    edges.push({ from: currentId, to: notMatchId, label: 'Non' });
+                }
+                if (parentId !== null) {
+                    edges.push({ from: parentId, to: currentId });
+                }
+            }
+            traverse(treeModel.root);
+            const container = document.getElementById('treeNetwork');
+            const networkData = {
+                nodes: new vis.DataSet(nodes),
+                edges: new vis.DataSet(edges)
+            };
+            const options = {
+                layout: {
+                    hierarchical: {
+                        direction: 'UD',
+                        sortMethod: 'directed'
+                    }
+                },
+                nodes: {
+                    font: { size: 16 },
+                    margin: 10
+                },
+                edges: {
+                    font: { size: 14 },
+                    arrows: 'to'
+                }
+            };
+            new vis.Network(container, networkData, options);
+        }
+
+        // Predict Churn
+        function predictChurn() {
+            const durée = parseFloat(document.getElementById('tenurePredict').value);
+            const facture = parseFloat(document.getElementById('billPredict').value);
+            if (isNaN(durée) || isNaN(facture)) {
+                alert("Veuillez entrer des valeurs valides pour la durée et la facture !");
+                return;
+            }
+            if (!treeModel) {
+                alert("Veuillez d'abord entraîner le modèle !");
+                return;
+            }
+            const pred = treeModel.predict({ durée, facture });
+            const label = pred === 1 ? 'Oui' : 'Non';
+            document.getElementById('churnPrediction').innerText = `Pour durée = ${durée} mois, facture = ${facture} $, résiliation : ${label}`;
+        }
+
+        // Initialize with one input for each
+        addRegressionInput();
+        addTreeInput();
+    </script>
+</body>
+</html>

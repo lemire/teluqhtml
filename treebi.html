@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse de la satisfaction client avec arbres de décision</title>
+    <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div>
+        <h1 class="text-2xl font-semibold mb-4">Analyse de la satisfaction client</h1>
+
+        <h2 class="text-xl font-semibold mb-2">Introduction à l’intelligence d’affaires</h2>
+        <p>L’intelligence d’affaires (BI) consiste à analyser les données d’une entreprise pour prendre des décisions éclairées. Les arbres de décision sont des outils puissants en BI pour segmenter les clients, identifier les facteurs influençant leur comportement, et prédire des résultats comme la satisfaction. Dans cette activité, nous utilisons un arbre de décision pour prédire la satisfaction des clients d’une entreprise de commerce en ligne en fonction de leur âge, localisation, fréquence d’achat, et dépenses moyennes.</p>
+
+        <h2 class="text-xl font-semibold mb-2">Structure et fonctionnement</h2>
+        <p>Un arbre de décision divise les données en sous-groupes basés sur des conditions (par exemple, "Dépenses moyennes > 100 $ ?"). Chaque nœud représente une condition, chaque branche une réponse, et chaque feuille un résultat, ici la satisfaction client (Satisfait ou Non satisfait). Le modèle utilise des critères comme le gain d’information pour optimiser les divisions.</p>
+
+        <h2 class="text-xl font-semibold mb-2">Contexte de l’activité</h2>
+        <p>Vous êtes analyste dans une entreprise de commerce en ligne. Votre objectif est d’utiliser un arbre de décision pour comprendre quels facteurs (âge, localisation, fréquence d’achat, dépenses moyennes) influencent la satisfaction client. En anglais, les champs sont nommés  name, age, region, frequency, spending, and satisfaction.
+Vous entraînerez un modèle avec des données historiques, visualiserez l’arbre, et prédirez la satisfaction de nouveaux clients.</p>
+
+        <h2 class="text-xl font-semibold mb-2">Données des clients</h2>
+        <p id="errorMessage" class="mt-2 text-red-500"></p>
+        <table id="clientTable" class="min-w-full bg-white border">
+            <thead>
+                <tr class="bg-gray-200">
+                    <th>Nom</th>
+                    <th>Âge</th>
+                    <th>Région</th>
+                    <th>Fréquence d’achat (par mois)</th>
+                    <th>Dépenses moyennes ($)</th>
+                    <th>Satisfaction</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="clientTableBody"></tbody>
+        </table>
+
+        <h3 class="text-xl font-semibold mt-6 mb-2">Ajouter un client</h3>
+        <div class="grid grid-cols-5 gap-4 mb-4">
+            <input id="nameInput" type="text" placeholder="Nom" class="border p-2 rounded">
+            <input id="ageInput" type="number" placeholder="Âge" class="border p-2 rounded">
+            <select id="regionInput" class="border p-2 rounded">
+                <option value="Urbain">Urbain</option>
+                <option value="Suburbain">Suburbain</option>
+                <option value="Rural">Rural</option>
+            </select>
+            <input id="frequencyInput" type="number" placeholder="Fréquence d’achat" class="border p-2 rounded">
+            <input id="spendingInput" type="number" placeholder="Dépenses moyennes" class="border p-2 rounded">
+            <select id="satisfactionInput" class="border p-2 rounded">
+                <option value="Satisfait">Satisfait</option>
+                <option value="Non satisfait">Non satisfait</option>
+            </select>
+        </div>
+        <button onclick="addClient()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Ajouter</button>
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">Entraîner l’arbre de décision</h2>
+        <button onclick="trainDecisionTree()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Analyser</button>
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">Visualisation de l’arbre</h2>
+        <div id="decisionTree" style="height: 800px; width: 100%; border: 1px solid #e5e7eb;"></div>
+
+        <h2 class="text-xl font-semibold mt-6 mb-2">Prédire la satisfaction</h2>
+        <div class="grid grid-cols-4 gap-4 mb-4">
+            <input id="predictName" type="text" placeholder="Nom (facultatif)" class="border p-2 rounded">
+            <input id="predictAge" type="number" placeholder="Âge" class="border p-2 rounded">
+            <select id="predictRegion" class="border p-2 rounded">
+                <option value="Urbain">Urbain</option>
+                <option value="Suburbain">Suburbain</option>
+                <option value="Rural">Rural</option>
+            </select>
+            <input id="predictFrequency" type="number" placeholder="Fréquence d’achat" class="border p-2 rounded">
+            <input id="predictSpending" type="number" placeholder="Dépenses moyennes" class="border p-2 rounded">
+        </div>
+        <button onclick="predictSatisfaction()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Prédire</button>
+        <p id="predictionResult" class="mt-2"></p>
+
+        <h3 class="text-xl font-semibold mb-2">Exercice d’analyse</h3>
+        <p>Utilisez les 10 clients fournis pour analyser les facteurs de satisfaction.</p>
+        <ol>
+            <li>Entraînez l’arbre de décision en cliquant sur "Analyser".</li>
+            <li>Observez les conditions principales de l’arbre (par exemple, quelles variables comme les dépenses ou la fréquence d’achat sont les plus influentes).</li>
+            <li>Ajoutez 5 nouveaux clients via le formulaire, en variant les âges, régions, fréquences d’achat, dépenses, et niveaux de satisfaction.</li>
+            <li>Entraînez à nouveau l’arbre et comparez les changements dans les conditions de division.</li>
+            <li>Prédisez la satisfaction d’un nouveau client fictif et discutez des implications pour une stratégie d’entreprise (par exemple, cibler des clients à forte dépense).</li>
+        </ol>
+    </div>
+
+
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md my-6">
+        <h1 class="text-2xl font-semibold mb-4">Entraînement d’un arbre de décision</h1>
+        <p class="mb-4">L’entraînement d’un arbre de décision repose sur la construction d’une structure arborescente qui segmente les données, ici les informations des clients (âge, région, fréquence d’achat, dépenses moyennes, satisfaction), pour prédire la catégorie cible (Satisfait/Non satisfait). Le processus débute avec le nœud racine, englobant l’ensemble des données, et divise itérativement cet ensemble en sous-groupes en sélectionnant à chaque étape la condition (par exemple, "Dépenses moyennes >= 100 $") qui maximise le gain d’information. Ce gain est calculé en mesurant la réduction de l’entropie, une métrique qui quantifie l’incertitude ou le désordre dans la répartition des catégories. L’algorithme continue de diviser les données jusqu’à ce qu’un critère d’arrêt soit atteint, comme une profondeur maximale (fixée à 5 dans ce cas pour limiter la complexité), un nombre minimal d’éléments par nœud, ou une entropie inférieure à un seuil (0,01 ici). Les attributs non pertinents, comme le nom du client, sont exclus pour optimiser la pertinence du modèle.</p>
+
+        <h2 class="text-xl font-semibold mb-2">Calcul de l’entropie</h2>
+        <p class="mb-4">L’entropie, notée <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>H</mi></math>, est une mesure issue de la théorie de l’information, utilisée pour évaluer l’incertitude dans la répartition des catégories au sein d’un ensemble de données. Dans le contexte de l’activité, où la variable cible est la satisfaction client (Satisfait ou Non satisfait), l’entropie d’un ensemble <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>S</mi></math> est calculée comme suit :</p>
+        <p class="text-center mb-4">
+            <math xmlns="http://www.w3.org/1998/Math/MathML">
+                <mi>H</mi><mo>(</mo><mi>S</mi><mo>)</mo><mo>=</mo><mo>-</mo>
+                <munderover>
+                    <mo>∑</mo>
+                    <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                    <mi>n</mi>
+                </munderover>
+                <msub><mi>p</mi><mi>i</mi></msub>
+                <mo>·</mo>
+                <msub>
+                    <mi>log</mi>
+                    <mn>2</mn>
+                </msub>
+                <mo>(</mo><msub><mi>p</mi><mi>i</mi></msub><mo>)</mo>
+            </math>
+        </p>
+        <p class="mb-4">où :</p>
+        <ul class="list-disc list-inside mb-4">
+            <li><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>n</mi></math> est le nombre de catégories possibles (ici, 2 : Satisfait et Non satisfait),</li>
+            <li><math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mi>i</mi></msub></math> est la proportion d’éléments appartenant à la catégorie <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>i</mi></math> dans l’ensemble <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>S</mi></math>.</li>
+        </ul>
+
+        <h3 class="text-lg font-semibold mb-2">Étapes du calcul</h3>
+        <ol class="list-decimal list-inside mb-4">
+            <li><strong>Comptage des catégories</strong> : Pour un ensemble de données <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>S</mi></math>, on compte le nombre d’occurrences de chaque catégorie. Par exemple, si <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>S</mi></math> contient 10 clients, dont 6 sont Satisfaits et 4 Non satisfaits, les proportions sont <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mtext>Satisfait</mtext></msub><mo>=</mo><mfrac><mn>6</mn><mn>10</mn></mfrac><mo>=</mo><mn>0,6</mn></math> et <math xmlns="http://www.w3.org/1998/Math/MathML"><msub><mi>p</mi><mtext>Non satisfait</mtext></msub><mo>=</mo><mfrac><mn>4</mn><mn>10</mn></mfrac><mo>=</mo><mn>0,4</mn></math>.</li>
+            <li><strong>Calcul de l’entropie</strong> : On applique la formule : 
+                <p class="text-center my-2">
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <mi>H</mi><mo>(</mo><mi>S</mi><mo>)</mo><mo>=</mo><mo>-</mo>
+                        <mo>(</mo>
+                        <msub><mi>p</mi><mtext>Satisfait</mtext></msub>
+                        <mo>·</mo>
+                        <msub>
+                            <mi>log</mi>
+                            <mn>2</mn>
+                        </msub>
+                        <mo>(</mo><msub><mi>p</mi><mtext>Satisfait</mtext></msub><mo>)</mo>
+                        <mo>+</mo>
+                        <msub><mi>p</mi><mtext>Non satisfait</mtext></msub>
+                        <mo>·</mo>
+                        <msub>
+                            <mi>log</mi>
+                            <mn>2</mn>
+                        </msub>
+                        <mo>(</mo><msub><mi>p</mi><mtext>Non satisfait</mtext></msub><mo>)</mo>
+                        <mo>)</mo>
+                    </math>
+                </p>
+                En utilisant l’exemple : <math xmlns="http://www.w3.org/1998/Math/MathML"><mi>H</mi><mo>(</mo><mi>S</mi><mo>)</mo><mo>=</mo><mo>-</mo><mo>(</mo><mn>0,6</mn><mo>·</mo><msub><mi>log</mi><mn>2</mn></msub><mo>(</mo><mn>0,6</mn><mo>)</mo><mo>+</mo><mn>0,4</mn><mo>·</mo><msub><mi>log</mi><mn>2</mn></msub><mo>(</mo><mn>0,4</mn><mo>)</mo><mo>)</mo><mo>≈</mo><mo>-</mo><mo>(</mo><mn>0,6</mn><mo>·</mo><mo>(</mo><mo>-</mo><mn>0,737</mn><mo>)</mo><mo>+</mo><mn>0,4</mn><mo>·</mo><mo>(</mo><mo>-</mo><mn>1,322</mn><mo>)</mo><mo>)</mo><mo>≈</mo><mn>0,971</mn></math>. Une entropie proche de 1 indique une forte incertitude (répartition équilibrée), tandis qu’une entropie proche de 0 indique une répartition très homogène.</li>
+            <li><strong>Évaluation des divisions</strong> : Pour chaque attribut (par exemple, âge ou dépenses moyennes), l’algorithme teste des seuils (comme "Âge >= 30") pour diviser l’ensemble en deux sous-ensembles (match et notMatch). L’entropie de chaque sous-ensemble est calculée, puis pondérée par la taille relative de ces sous-ensembles. L’entropie moyenne après division est :
+                <p class="text-center my-2">
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <msub><mi>H</mi><mtext>moyenne</mtext></msub><mo>=</mo>
+                        <mfrac>
+                            <mrow>
+                                <mo>|</mo><msub><mi>S</mi><mtext>match</mtext></msub><mo>|</mo>
+                                <mo>·</mo>
+                                <mi>H</mi><mo>(</mo><msub><mi>S</mi><mtext>match</mtext></msub><mo>)</mo>
+                                <mo>+</mo>
+                                <mo>|</mo><msub><mi>S</mi><mtext>notMatch</mtext></msub><mo>|</mo>
+                                <mo>·</mo>
+                                <mi>H</mi><mo>(</mo><msub><mi>S</mi><mtext>notMatch</mtext></msub><mo>)</mo>
+                            </mrow>
+                            <mrow><mo>|</mo><mi>S</mi><mo>|</mo></mrow>
+                        </mfrac>
+                    </math>
+                </p>
+            </li>
+            <li><strong>Gain d’information</strong> : Le gain d’information est la différence entre l’entropie initiale de l’ensemble et l’entropie moyenne après division :
+                <p class="text-center my-2">
+                    <math xmlns="http://www.w3.org/1998/Math/MathML">
+                        <mtext>Gain</mtext><mo>=</mo>
+                        <mi>H</mi><mo>(</mo><mi>S</mi><mo>)</mo>
+                        <mo>-</mo>
+                        <msub><mi>H</mi><mtext>moyenne</mtext></msub>
+                    </math>
+                </p>
+                L’attribut et le seuil offrant le gain le plus élevé sont choisis pour créer le nœud de division.</li>
+        </ol>
+
+        <h3 class="text-lg font-semibold mb-2">Application dans l’arbre</h3>
+        <p>Lors de l’entraînement, l’algorithme parcourt tous les attributs (sauf ceux ignorés, comme le nom) et leurs valeurs possibles pour identifier la division qui réduit le plus l’entropie. Par exemple, si diviser par "Dépenses moyennes >= 150 $" donne des sous-ensembles où la satisfaction est plus homogène (entropie faible), cette division est privilégiée. Ce processus se répète récursivement pour chaque sous-ensemble jusqu’à ce qu’un critère d’arrêt soit atteint, formant ainsi les nœuds et feuilles de l’arbre. Les feuilles correspondent aux cas où l’entropie est suffisamment basse ou où les données ne peuvent plus être divisées, prédisant alors la catégorie majoritaire (par exemple, Satisfait).</p>
+    </div>
+
+    <script>
+        // Bibliothèque decision-tree-js (inchangée)
+        var dt = function() {
+            function n(b) {
+                var c = v,
+                    e = b.trainingSet,
+                    d = b.ignoredAttributes,
+                    a = {};
+                if (d)
+                    for (var f in d) a[d[f]] = !0;
+                this.root = c({
+                    trainingSet: e,
+                    ignoredAttributes: a,
+                    categoryAttr: b.categoryAttr || "category",
+                    minItemsCount: b.minItemsCount || 1,
+                    entropyThrehold: b.entropyThrehold || 0.01,
+                    maxTreeDepth: b.maxTreeDepth || 70
+                })
+            }
+
+            function p(b, c) {
+                for (var e = b.trainingSet, d = [], a = 0; a < c; a++) d[a] = [];
+                for (a = e.length - 1; 0 <= a; a--) d[a % c].push(e[a]);
+                e = [];
+                for (a = 0; a < c; a++) {
+                    b.trainingSet = d[a];
+                    var f = new n(b);
+                    e.push(f)
+                }
+                this.trees = e
+            }
+
+            function q(b, c) {
+                for (var e = {}, d = b.length - 1; 0 <= d; d--) e[b[d][c]] = 0;
+                for (d = b.length - 1; 0 <= d; d--) e[b[d][c]] += 1;
+                return e
+            }
+
+            function w(b, c) {
+                var e = q(b, c),
+                    d = 0,
+                    a, f;
+                for (f in e) a = e[f] / b.length, d += -a * Math.log(a);
+                return d
+            }
+
+            function x(b, c) {
+                var e = q(b, c),
+                    d = 0,
+                    a, f;
+                for (f in e) e[f] > d && (d = e[f], a = f);
+                return a
+            }
+
+            function v(b) {
+                var c = b.trainingSet,
+                    e = b.minItemsCount,
+                    d = b.categoryAttr,
+                    a = b.entropyThrehold,
+                    f = b.maxTreeDepth,
+                    n = b.ignoredAttributes;
+                if (0 == f || c.length <= e) return {
+                    category: x(c, d)
+                };
+                e = w(c, d);
+                if (e <= a) return {
+                    category: x(c, d)
+                };
+                for (var m = {}, a = {
+                        gain: 0
+                    },
+                    y = c.length - 1; 0 <= y; y--) {
+                    var p = c[y],
+                        k;
+                    for (k in p)
+                        if (k != d && !n[k]) {
+                            var s = p[k],
+                                t;
+                            t = "number" == typeof s ? ">=" : "==";
+                            var r = k + t + s;
+                            if (!m[r]) {
+                                m[r] = !0;
+                                var r = D[t],
+                                    g;
+                                g = c;
+                                for (var l = k, z = r, h = s, q = [], B = [], u = void 0, C = void 0, A = g.length - 1; 0 <= A; A--) u = g[A], C = u[l], z(C, h) ? q.push(u) : B.push(u);
+                                g = {
+                                    match: q,
+                                    notMatch: B
+                                };
+                                l = w(g.match, d);
+                                z = w(g.notMatch, d);
+                                h = 0;
+                                h += l * g.match.length;
+                                h += z * g.notMatch.length;
+                                h /= c.length;
+                                l = e - h;
+                                l > a.gain && (a = g, a.predicateName = t, a.predicate = r, a.attribute = k, a.pivot = s, a.gain = l)
+                            }
+                        }
+                }
+                if (!a.gain) return {
+                    category: x(c, d)
+                };
+                b.maxTreeDepth = f - 1;
+                b.trainingSet = a.match;
+                c = v(b);
+                b.trainingSet = a.notMatch;
+                b = v(b);
+                return {
+                    attribute: a.attribute,
+                    predicate: a.predicate,
+                    predicateName: a.predicateName,
+                    pivot: a.pivot,
+                    match: c,
+                    notMatch: b,
+                    matchedCount: a.match.length,
+                    notMatchedCount: a.notMatch.length
+                }
+            }
+            n.prototype.predict = function(b) {
+                a: {
+                    for (var c = this.root, e, d, a;;) {
+                        if (c.category) {
+                            b = c.category;
+                            break a
+                        }
+                        e = c.attribute;
+                        e = b[e];
+                        d = c.predicate;
+                        a = c.pivot;
+                        c = d(e, a) ? c.match : c.notMatch
+                    }
+                    b = void 0
+                }
+                return b
+            };
+            p.prototype.predict = function(b) {
+                var c = this.trees,
+                    e = {},
+                    d;
+                for (d in c) {
+                    var a = c[d].predict(b);
+                    e[a] = e[a] ? e[a] + 1 : 1
+                }
+                return e
+            };
+            var D = {
+                    "==": function(b, c) {
+                        return b == c
+                    },
+                    ">=": function(b, c) {
+                        return b >= c
+                    }
+                },
+                m = {};
+            m.DecisionTree = n;
+            m.RandomForest = p;
+            return m
+        }();
+
+        // Gestion des erreurs globales
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.innerText = `Erreur : ${msg}. Vérifiez la console pour plus de détails.`;
+            errorMessage.style.display = "block";
+            console.error(error);
+            return false;
+        };
+
+        // Vérifier si la bibliothèque decision-tree-js est chargée
+        if (typeof dt === "undefined" || !dt.DecisionTree) {
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.innerText = "Erreur : La bibliothèque decision-tree-js n'est pas chargée correctement.";
+            errorMessage.style.display = "block";
+            throw new Error("decision-tree-js not loaded");
+        }
+
+        // Données initiales des clients
+        const clients = [
+            { name: "Alice Martin", age: 25, region: "Urbain", frequency: 5, spending: 5, satisfaction: "Satisfait" },
+            { name: "Bob Lavoie", age: 34, region: "Suburbain", frequency: 2, spending: 80, satisfaction: "Non satisfait" },
+            { name: "Clara Dubois", age: 45, region: "Rural", frequency: 3, spending: 200, satisfaction: "Satisfait" },
+            { name: "David Tremblay", age: 29, region: "Urbain", frequency: 6, spending: 120, satisfaction: "Satisfait" },
+            { name: "Emma Gagnon", age: 38, region: "Suburbain", frequency: 1, spending: 50, satisfaction: "Non satisfait" },
+            { name: "François Roy", age: 50, region: "Rural", frequency: 4, spending: 300, satisfaction: "Satisfait" },
+            { name: "Gabrielle Côté", age: 27, region: "Urbain", frequency: 7, spending: 180, satisfaction: "Satisfait" },
+            { name: "Hugo Bélanger", age: 42, region: "Suburbain", frequency: 2, spending: 90, satisfaction: "Non satisfait" },
+            { name: "Isabelle Morin", age: 33, region: "Urbain", frequency: 5, spending: 140, satisfaction: "Satisfait" },
+            { name: "Julien Lefèvre", age: 55, region: "Rural", frequency: 3, spending: 110, satisfaction: "Non satisfait" }
+        ];
+
+        let decisionTree = null;
+
+        // Afficher les données des clients
+        function displayClients() {
+            const tbody = document.getElementById("clientTableBody");
+            tbody.innerHTML = "";
+            clients.forEach((client, index) => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.age}</td>
+                    <td>${client.region}</td>
+                    <td>${client.frequency}</td>
+                    <td>${client.spending}</td>
+                    <td>${client.satisfaction}</td>
+                    <td><button onclick="deleteClient(${index})" class="text-red-500 hover:underline">Supprimer</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Ajouter un client
+        function addClient() {
+            const name = document.getElementById("nameInput").value.trim();
+            const age = parseInt(document.getElementById("ageInput").value);
+            const region = document.getElementById("regionInput").value;
+            const frequency = parseInt(document.getElementById("frequencyInput").value);
+            const spending = parseInt(document.getElementById("spendingInput").value);
+            const satisfaction = document.getElementById("satisfactionInput").value;
+
+            if (name && age && region && frequency >= 0 && spending >= 0 && satisfaction) {
+                clients.push({ name, age, region, frequency, spending, satisfaction });
+                displayClients();
+                clearAddForm();
+            } else {
+                alert("Veuillez remplir tous les champs correctement.");
+            }
+        }
+
+        // Supprimer un client
+        function deleteClient(index) {
+            clients.splice(index, 1);
+            displayClients();
+        }
+
+        // Vider le formulaire d’ajout
+        function clearAddForm() {
+            document.getElementById("nameInput").value = "";
+            document.getElementById("ageInput").value = "";
+            document.getElementById("regionInput").value = "Urbain";
+            document.getElementById("frequencyInput").value = "";
+            document.getElementById("satisfactionInput").value = "Satisfait";
+            document.getElementById("spendingInput").value = "";
+        }
+
+        // Entraîner l’arbre de décision
+        function trainDecisionTree() {
+            try {
+                const config = {
+                    trainingSet: clients,
+                    categoryAttr: "satisfaction",
+                    ignoredAttributes: ["name"],
+                    minItemsCount: 1,
+                    entropyThrehold: 0.01,
+                    maxTreeDepth: 5
+                };
+                decisionTree = new dt.DecisionTree(config);
+                console.log("Arbre de décision entraîné avec succès", decisionTree);
+                visualizeTree(decisionTree);
+                document.getElementById("errorMessage").style.display = "none";
+            } catch (error) {
+                const errorMessage = document.getElementById("errorMessage");
+                errorMessage.innerText = `Erreur lors de l'entraînement : ${error.message}`;
+                errorMessage.style.display = "block";
+                console.error(error);
+            }
+        }
+
+        // Visualiser l’arbre avec vis.js
+        function visualizeTree(tree) {
+            try {
+                if (!vis || !vis.Network) {
+                    throw new Error("vis-network not loaded");
+                }
+                const nodes = [];
+                const edges = [];
+                let nodeId = 0;
+
+                function traverse(node, parentId = null) {
+                    const currentId = nodeId++;
+                    let label;
+                    if (node.category) {
+                        label = `Satisfaction: ${node.category}`;
+                        nodes.push({
+                            id: currentId,
+                            label: label,
+                            shape: "box",
+                            color: { background: "#90EE90", border: "#228B22" }
+                        });
+                    } else {
+                        label = `${node.attribute} ${node.predicateName} ${node.pivot}`;
+                        nodes.push({
+                            id: currentId,
+                            label: label,
+                            shape: "ellipse",
+                            color: { background: "#ADD8E6", border: "#4682B4" }
+                        });
+                    }
+                    if (parentId !== null) {
+                        edges.push({ from: parentId, to: currentId });
+                    }
+                    if (node.match) {
+                        const matchId = traverse(node.match, currentId);
+                        edges.push({ from: currentId, to: matchId, label: "Oui", color: { color: "#228B22" } });
+                    }
+                    if (node.notMatch) {
+                        const notMatchId = traverse(node.notMatch, currentId);
+                        edges.push({ from: currentId, to: notMatchId, label: "Non", color: { color: "#DC143C" } });
+                    }
+                    return currentId;
+                }
+
+                traverse(tree.root);
+                const container = document.getElementById("decisionTree");
+                const data = {
+                    nodes: new vis.DataSet(nodes),
+                    edges: new vis.DataSet(edges)
+                };
+                const options = {
+                    layout: {
+                        hierarchical: {
+                            direction: "UD",
+                            sortMethod: "directed",
+                            levelSeparation: 150,
+                            nodeSpacing: 200
+                        }
+                    },
+                    edges: { arrows: "to", font: { align: "middle" } },
+                    physics: false
+                };
+                new vis.Network(container, data, options);
+            } catch (error) {
+                const errorMessage = document.getElementById("errorMessage");
+                errorMessage.innerText = `Erreur lors de la visualisation : ${error.message}`;
+                errorMessage.style.display = "block";
+                console.error(error);
+            }
+        }
+
+        // Prédire la satisfaction
+        function predictSatisfaction() {
+            try {
+                if (!decisionTree) {
+                    alert("Veuillez d'abord entraîner l’arbre de décision.");
+                    return;
+                }
+                const name = document.getElementById("predictName").value.trim();
+                const age = parseInt(document.getElementById("predictAge").value);
+                const region = document.getElementById("predictRegion").value;
+                const frequency = parseInt(document.getElementById("predictFrequency").value);
+                const spending = parseInt(document.getElementById("predictSpending").value);
+
+                if (age && region && frequency >= 0 && spending >= 0) {
+                    const prediction = decisionTree.predict({ name, age, region, frequency, spending });
+                    document.getElementById("predictionResult").innerText = `Satisfaction prédite : ${prediction}`;
+                    document.getElementById("errorMessage").style.display = "none";
+                } else {
+                    alert("Veuillez remplir tous les champs pour la prédiction (sauf le nom, facultatif).");
+                }
+            } catch (error) {
+                const errorMessage = document.getElementById("errorMessage");
+                errorMessage.innerText = `Erreur lors de la prédiction : ${error.message}`;
+                errorMessage.style.display = "block";
+                console.error(error);
+            }
+        }
+
+        // Initialiser l’affichage
+        try {
+            displayClients();
+        } catch (error) {
+            const errorMessage = document.getElementById("errorMessage");
+            errorMessage.innerText = `Erreur lors de l'initialisation : ${error.message}`;
+            errorMessage.style.display = "block";
+            console.error(error);
+        }
+    </script>
+</body>
+</html>

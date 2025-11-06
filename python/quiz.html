@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Problèmes et solutions en Python</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 20px; line-height: 1.6;">
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 30px;">Problèmes et solutions en Python</h1>
+    
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Extraire le nom de la rue d'une chaîne de la forme "970, rue St-Laurent"</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="3" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">adresse = "970, rue St-Laurent"
+print(adresse.split(", ")[1])</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Le dernier élément d'une liste</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def dernier(l):
+    return l[-1]
+
+print(dernier([1,2,3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Une liste formé du premier et du dernier élément</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def premier_dernier(l):
+    return [l[0], l[-1]]
+
+print(premier_dernier([1,2,3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Le plus petit élément de la liste</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def min_liste(l):
+    return min(l)
+
+print(min_liste([3,1,4,1,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Le plus grand élément de la liste</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def max_liste(l):
+    return max(l)
+
+print(max_liste([3,1,4,1,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Liste suivie de son inverse</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def palindrome_liste(l):
+    return l + l[::-1]
+
+print(palindrome_liste([1,2,3]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Liste sans l'élément du milieu</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="6" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def sans_milieu(l):
+    milieu = len(l) // 2
+    return l[:milieu] + l[milieu+1:]
+
+print(sans_milieu([1,2,3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+    
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Somme des éléments d'une liste</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="7" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def somme(l):
+    total = 0
+    for elem in l:
+        total += elem
+    return total
+
+print(somme([1,2,3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Somme des éléments positifs</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="8" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def somme_pos(l):
+    total = 0
+    for elem in l:
+        if elem > 0:
+            total += elem
+    return total
+
+print(somme_pos([-1,2,-3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Liste des éléments convertis en chaînes</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def chaines(l):
+    return [str(elem) for elem in l]
+
+print(chaines([1,2,3]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Liste des éléments positifs</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">def pos(l):
+    return [elem for elem in l if elem > 0]
+
+print(pos([-1,2,-3,4,5]))</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Trier une liste de tuples par le deuxième élément en utilisant une lambda</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">liste = [('a', 3), ('b', 1), ('c', 2)]
+triee = sorted(liste, key=lambda x: x[1])
+print(triee)</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        
+        <p style="font-weight: bold; color: #34495e; margin: 15px 0 5px 0; font-size: 18px;">Question: Utiliser map avec une lambda pour doubler chaque élément d'une liste</p>
+        <details style="margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; background-color: #fff; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #27ae60; margin-bottom: 10px;">Solution</summary>
+            <div class="python-executor" style="margin-top: 10px;">
+                <textarea class="python-input" rows="4" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 14px; margin-bottom: 10px;">liste = [1, 2, 3, 4, 5]
+doublee = list(map(lambda x: x * 2, liste))
+print(doublee)</textarea>
+                <button class="run-button" style="background-color: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-right: 10px;">Exécuter</button>
+                <div class="error" style="color: #e74c3c; margin-top: 10px;"></div>
+                <div class="result" style="margin-top: 10px; padding: 8px; background-color: #ecf0f1; border-radius: 4px; font-family: monospace;"></div>
+            </div>
+        </details>
+        
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.js"></script>
+    <script type="text/javascript">
+        let pyodideInstance = null;
+
+        // Function to load Pyodide
+        async function loadPyodideOnce() {
+            if (pyodideInstance) {
+                return pyodideInstance;
+            }
+            try {
+                console.log('Loading Pyodide...');
+                const pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/"
+                });
+                console.log('Pyodide loaded successfully');
+                // Initialize sys.stdout redirection once
+                pyodide.runPython(`
+                    import sys
+                    from io import StringIO
+                    sys.stdout = StringIO()
+                    sys.stderr = StringIO()
+                `);
+                pyodideInstance = pyodide;
+                return pyodide;
+            } catch (e) {
+                console.error(`Erreur : Impossible de charger Pyodide - ${e.message}`);
+                throw e;
+            }
+        }
+
+        // Event listener for run buttons
+        document.addEventListener('click', async function(e) {
+            if (!e.target.classList.contains('run-button')) return;
+            console.log('Button clicked');
+            
+            const container = e.target.closest('.python-executor');
+            const pythonInput = container.querySelector('.python-input').value.trim();
+            const errorDiv = container.querySelector('.error');
+            const resultDiv = container.querySelector('.result');
+
+            // Clear previous results and errors
+            errorDiv.textContent = '';
+            resultDiv.innerHTML = '';
+
+            if (!pythonInput) {
+                errorDiv.textContent = 'Erreur : Veuillez entrer un code Python.';
+                return;
+            }
+
+            try {
+                console.log('Loading Pyodide');
+                const pyodide = await loadPyodideOnce();
+                console.log('Pyodide loaded');
+
+                // Clear the StringIO buffers before each run
+                pyodide.runPython('sys.stdout = StringIO()');
+                pyodide.runPython('sys.stderr = StringIO()');
+
+                // Execute the Python code wrapped in try-except to capture errors
+                const wrappedCode = `
+try:
+    ${pythonInput.replace(/\n/g, '\n    ')}
+except Exception as e:
+    import sys
+    print(repr(e), file=sys.stderr)
+`;
+                await pyodide.runPythonAsync(wrappedCode);
+
+                // Get output from stdout
+                const output = pyodide.runPython('sys.stdout.getvalue()');
+                // Get errors from stderr
+                const errorOutput = pyodide.runPython('sys.stderr.getvalue()');
+
+                if (errorOutput) {
+                    errorDiv.textContent = `Erreur Python : ${errorOutput.trim()}`;
+                } else if (output) {
+                    const pre = document.createElement('pre');
+                    pre.textContent = output;
+                    pre.style.fontFamily = 'monospace';
+                    pre.style.fontSize = '14px';
+                    pre.style.color = '#374151';
+                    pre.style.padding = '8px';
+                    pre.style.backgroundColor = '#f9fafb';
+                    pre.style.border = '1px solid #e5e7eb';
+                    pre.style.borderRadius = '4px';
+                    pre.style.margin = '0';
+                    resultDiv.appendChild(pre);
+                } else {
+                    resultDiv.textContent = 'Le code s\'est exécuté sans erreur et n\'a produit aucune sortie.';
+                    resultDiv.style.color = '#4b5563';
+                }
+            } catch (e) {
+                console.error(e);
+                let errorMsg = errorOutput;//e.message || 'Erreur inconnue';
+                // Extract the last meaningful line from the traceback
+                const lines = errorMsg.split('\n').filter(line => line.trim());
+                if (lines.length > 0) {
+                    // Find the last line that looks like an error message
+                    for (let i = lines.length - 1; i >= 0; i--) {
+                        if (lines[i].includes(':') && !lines[i].startsWith('  ')) {
+                            errorMsg = lines[i];
+                            break;
+                        }
+                    }
+                }
+                errorDiv.textContent = `Erreur Python : ${errorMsg}`;
+            }
+        });
+
+        // Load Pyodide when the page loads
+        document.addEventListener('DOMContentLoaded', loadPyodideOnce);
+    </script>
+</body>
+</html>

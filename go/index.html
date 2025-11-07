@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Go - 20 Questions</title>
+</head>
+<body style="font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4;">
+    <h1>Quiz sur le langage Go</h1>
+
+    <p>Utilisez <strong>l'éditeur de code ci-dessous</strong> pour écrire et exécuter votre code Go afin de répondre aux questions du quiz.</p>
+
+    <div style="margin-top: 40px;">
+        <div style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 1.5rem; width: 100%; max-width: 672px;">
+            <h1 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; text-align: center;">Go en ligne</h1>
+            <textarea id="codeInput" style="width: 100%; height: 16rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace; " placeholder="Write your Go code here...">package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Bonjour la TÉLUQ!")
+}</textarea>
+            <button id="runButton" style="margin-top: 1rem; width: 100%; background-color: #3b82f6; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#2563eb'" onmouseout="this.style.backgroundColor='#3b82f6'">
+                Exécuter le code Go
+            </button>
+            <div id="output" style="margin-top: 1rem; padding: 0.5rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace; ">
+                <p style="color: #6b7280;">Ici la sortie</p>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Handle question editors
+                const runButtons = document.querySelectorAll('.run-btn');
+
+                runButtons.forEach(button => {
+                    button.addEventListener('click', async () => {
+                        const editor = button.closest('.code-editor');
+                        const codeInput = editor.querySelector('.code-input');
+                        const outputDiv = editor.querySelector('.output');
+
+                        const code = codeInput.value;
+                        outputDiv.innerHTML = '<p style="color: #6b7280;">Je travaille fort...</p>';
+
+                        try {
+                            const response = await fetch('https://play.golang.org/compile', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'text/plain',
+                                },
+                                body: JSON.stringify({
+                                    body: code
+                                }),
+                            });
+
+                            const data = await response.json();
+
+                            if (data.Events != null && data.Events.length > 0) {
+                                const outputMessage = data.Events[0].Message;
+                                outputDiv.innerHTML = `<p style="color: #16a34a;"><pre>${outputMessage || 'No output'}</pre></p>`;
+                            } else if (data.Errors) {
+                                const syntaxErr = data.Errors.replace(/prog.go:/g, 'main.go:');
+                                outputDiv.innerHTML = `<p style="color: #dc2626;"><pre>${syntaxErr}</pre></p>`;
+                            } else {
+                                outputDiv.innerHTML = '<p style="color: #6b7280;">Execution completed with no output.</p>';
+                            }
+                        } catch (err) {
+                            outputDiv.innerHTML = `<p style="color: #dc2626;">Error: ${err.toString()}</pre></p>`;
+                        }
+                    });
+                });
+
+                // Handle main editor
+                const mainRunButton = document.getElementById('runButton');
+                if (mainRunButton) {
+                    mainRunButton.addEventListener('click', async () => {
+                        const code = document.getElementById('codeInput').value;
+                        const outputDiv = document.getElementById('output');
+                        outputDiv.innerHTML = '<p style="color: #6b7280;">Je travaille fort...</p>';
+
+                        try {
+                            const response = await fetch('https://play.golang.org/compile', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'text/plain',
+                                },
+                                body: JSON.stringify({
+                                    body: code
+                                }),
+                            });
+
+                            const data = await response.json();
+
+                            if (data.Events != null && data.Events.length > 0) {
+                                const outputMessage = data.Events[0].Message;
+                                outputDiv.innerHTML = `<p style="color: #16a34a;"><pre>${outputMessage || 'No output'}</pre></p>`;
+                            } else if (data.Errors) {
+                                const syntaxErr = data.Errors.replace(/prog.go:/g, 'main.go:');
+                                outputDiv.innerHTML = `<p style="color: #dc2626;"><pre>${syntaxErr}</pre></p>`;
+                            } else {
+                                outputDiv.innerHTML = '<p style="color: #6b7280;">Execution completed with no output.</p>';
+                            }
+                        } catch (err) {
+                            outputDiv.innerHTML = `<p style="color: #dc2626;">Error: ${err.toString()}</pre></p>`;
+                        }
+                    });
+                }
+            });
+        </script>
+    </div>
+    <div style="margin-bottom: 20px; padding: 10px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <p>1. Écrivez un programme qui imprime "Hello, World!" à la console.</p>
+        <details style="margin-top: 10px;">
+            <summary>Réponse</summary>
+            <div class="code-editor" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 1rem; margin-top: 10px;">
+                <textarea class="code-input" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" placeholder="Write your Go code here...">package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello, World!")
+}</textarea>
+                <button class="run-btn" style="margin-top: 0.5rem; width: 100%; background-color: #3b82f6; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s;">Exécuter le code Go</button>
+                <div class="output" style="margin-top: 0.5rem; padding: 0.5rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;">
+                    <p style="color: #6b7280;">Ici la sortie</p>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <p>2. Écrivez un programme qui déclare une variable entière x avec la valeur 42 et l'imprime.</p>
+        <details style="margin-top: 10px;">
+            <summary>Réponse</summary>
+            <div class="code-editor" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 1rem; margin-top: 10px;">
+                <textarea class="code-input" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" placeholder="Write your Go code here...">package main
+
+import "fmt"
+
+func main() {
+    var x int = 42
+    fmt.Println(x)
+}</textarea>
+                <button class="run-btn" style="margin-top: 0.5rem; width: 100%; background-color: #3b82f6; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s;">Exécuter le code Go</button>
+                <div class="output" style="margin-top: 0.5rem; padding: 0.5rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;">
+                    <p style="color: #6b7280;">Ici la sortie</p>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <p>3. Écrivez un programme qui utilise une boucle for pour imprimer les nombres de 1 à 5.</p>
+        <details style="margin-top: 10px;">
+            <summary>Réponse</summary>
+            <div class="code-editor" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 1rem; margin-top: 10px;">
+                <textarea class="code-input" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" placeholder="Write your Go code here...">package main
+
+import "fmt"
+
+func main() {
+    for i := 1; i <= 5; i++ {
+        fmt.Println(i)
+    }
+}</textarea>
+                <button class="run-btn" style="margin-top: 0.5rem; width: 100%; background-color: #3b82f6; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s;">Exécuter le code Go</button>
+                <div class="output" style="margin-top: 0.5rem; padding: 0.5rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;">
+                    <p style="color: #6b7280;">Ici la sortie</p>
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <div style="margin-bottom: 20px; padding: 10px; background-color: white; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <p>4. Écrivez un programme qui définit une fonction add qui prend deux entiers et retourne leur somme, puis l'appelle avec 3 et 4.</p>
+        <details style="margin-top: 10px;">
+            <summary>Réponse</summary>
+            <div class="code-editor" style="background-color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); padding: 1rem; margin-top: 10px;">
+                <textarea class="code-input" style="width: 100%; height: 12rem; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;" placeholder="Write your Go code here...">package main
+
+import "fmt"
+
+func add(a, b int) int {
+    return a + b
+}
+
+func main() {
+    result := add(3, 4)
+    fmt.Println(result)
+}</textarea>
+                <button class="run-btn" style="margin-top: 0.5rem; width: 100%; background-color: #3b82f6; color: white; padding: 0.5rem; border-radius: 0.375rem; transition: background-color 0.2s;">Exécuter le code Go</button>
+                <div class="output" style="margin-top: 0.5rem; padding: 0.5rem; background-color: #f9fafb; border: 1px solid #d1d5db; border-radius: 0.375rem; font-family: monospace;">
+                    <p style="color: #6b7280;">Ici la sortie</p>
+                </div>
+            </div>
+        </details>
+    </div>
+
+</body>
+</html>
